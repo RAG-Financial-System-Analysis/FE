@@ -59,6 +59,8 @@ npm run preview
 - **React**: ^19.2.0 - UI library
 - **TypeScript**: ~5.9.3 - Type safety
 - **Vite**: 7.2.5 (Rolldown) - Build tool and dev server
+- **Tailwind CSS**: ^4.0.0 - Utility-first CSS framework
+- **Shadcn/UI**: Component library built on Radix UI and Tailwind CSS
 - **ESLint**: Code linting and quality
 - **Prettier**: Code formatting
 
@@ -69,16 +71,83 @@ FE/
 ├── public/          # Static assets
 ├── src/
 │   ├── assets/      # Images, icons, etc.
+│   ├── components/  # Reusable UI components (Shadcn/UI)
+│   ├── lib/         # Utility functions and configurations
 │   ├── App.tsx      # Main application component
 │   ├── main.tsx     # Application entry point
-│   └── index.css    # Global styles
+│   └── index.css    # Global styles with Tailwind CSS
+├── components.json  # Shadcn/UI configuration
+├── tailwind.config.ts # Tailwind CSS configuration
 ├── package.json     # Dependencies and scripts
 ├── vite.config.ts   # Vite configuration
 ├── tsconfig.json    # TypeScript configuration
 └── README.md        # This file
 ```
 
+## 🎨 Styling & Components
+
+### Tailwind CSS
+This project uses Tailwind CSS v4 with:
+- **Utility-first approach**: Use utility classes for rapid UI development
+- **Custom design system**: Pre-configured colors, spacing, and typography
+- **Dark mode support**: Automatic light/dark theme switching
+- **Responsive design**: Mobile-first responsive utilities
+
+Example usage:
+```tsx
+<div className="bg-background text-foreground p-4 rounded-lg shadow-md">
+  <h1 className="text-2xl font-bold text-primary">Hello World</h1>
+</div>
+```
+
+### Shadcn/UI Components
+Pre-built, accessible components ready to use:
+- **Button**: Various styles and sizes
+- **Card**: Content containers
+- **Input**: Form inputs with validation
+- **Dialog**: Modal dialogs
+- **And many more...**
+
+Example usage:
+```tsx
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
+function MyComponent() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Card Title</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Button variant="default">Click me</Button>
+      </CardContent>
+    </Card>
+  )
+}
+```
+
+### Adding New Components
+To add new Shadcn/UI components:
+```bash
+npx shadcn@latest add [component-name]
+```
+
 ## 🔧 Configuration
+
+### Tailwind CSS
+The project is configured with Tailwind CSS v4 for utility-first styling:
+- Configuration: `tailwind.config.ts`
+- Global styles: `src/index.css`
+- Includes custom color scheme with light/dark mode support
+- Pre-configured with design tokens for consistent theming
+
+### Shadcn/UI
+Component library setup with:
+- Pre-built accessible components
+- Customizable design system
+- Built on Radix UI primitives
+- Fully integrated with Tailwind CSS theming
 
 ### ESLint
 The project uses ESLint with TypeScript and React-specific rules. Configuration is in `eslint.config.js`.
