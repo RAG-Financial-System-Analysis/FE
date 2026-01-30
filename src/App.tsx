@@ -8,6 +8,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute'
 import Dashboard from './pages/Dashboard'
 import FPTDetail from './pages/FPTDetail'
 import VinamilkDetail from './pages/VinamilkDetail'
+import Admin from './pages/Admin'
 import './index.css'
 
 function App() {
@@ -24,6 +25,9 @@ function App() {
             <Route path='/fpt' element={<FPTDetail />} />
             <Route path='/vinamilk' element={<VinamilkDetail />} />
           </Route>
+
+          {/* Admin Dashboard - có thể truy cập trực tiếp để xem UI */}
+          <Route path='/admin' element={<Admin />} />
           <Route path='/verify-account' element={<VerifyAccount />} />
         </Routes>
       </AuthProvider>
