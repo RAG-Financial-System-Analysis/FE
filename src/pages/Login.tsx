@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Mail, Lock, ChevronLeft, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Mail, Lock, ChevronLeft, AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import authService from '@/services/auth.service'
 
@@ -12,8 +12,10 @@ const Login = () => {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showSuccessToast, setShowSuccessToast] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -23,15 +25,18 @@ const Login = () => {
     try {
       const response = await authService.login({ email, password })
 
-      // Get user role
-      const userRole = response.testRole
+      // Show success toast
+      setShowSuccessToast(true)
 
-      // Redirect based on role or to home
-      if (userRole === 'Admin') {
-        navigate('/admin/dashboard')
-      } else {
-        navigate('/dashboard')
-      }
+      // Wait 1.5 seconds to show toast, then redirect
+      setTimeout(() => {
+        const userRole = response.testRole
+        if (userRole === 'Admin') {
+          navigate('/admin/dashboard')
+        } else {
+          navigate('/dashboard')
+        }
+      }, 1500)
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.')
     } finally {
@@ -41,6 +46,21 @@ const Login = () => {
 
   return (
     <div className='min-h-screen flex flex-col items-center justify-center bg-[#fafafa] px-4 relative overflow-hidden'>
+      {/* Success Toast */}
+      {showSuccessToast && (
+        <div className='fixed top-8 right-8 z-50 animate-fade-in-up'>
+          <div className='bg-white rounded-2xl shadow-2xl border border-green-200 p-6 flex items-start gap-4 min-w-[320px]'>
+            <div className='w-12 h-12 bg-green-100 rounded-full flex items-center justify-center shrink-0'>
+              <CheckCircle2 className='w-6 h-6 text-green-600' />
+            </div>
+            <div className='flex-1'>
+              <h3 className='font-bold text-gray-900 mb-1'>Login Successful!</h3>
+              <p className='text-sm text-gray-600'>Redirecting to dashboard...</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Immersive Background */}
       <div className='absolute inset-0 z-0'>
         <div className='absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_0%_0%,rgba(37,64,119,0.08)_0%,transparent_50%),radial-gradient(circle_at_100%_100%,rgba(58,90,154,0.08)_0%,transparent_50%)]'></div>
@@ -130,13 +150,20 @@ const Login = () => {
               <div className='relative group'>
                 <Lock className='absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-primary transition-colors' />
                 <Input
-                  type='password'
+                  type={showPassword ? 'text' : 'password'}
                   placeholder='••••••••'
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className='bg-gray-50/50 border-gray-100 h-14 pl-12 rounded-2xl focus-visible:ring-primary/10 transition-all focus:bg-white'
+                  className='bg-gray-50/50 border-gray-100 h-14 pl-12 pr-12 rounded-2xl focus-visible:ring-primary/10 transition-all focus:bg-white'
                 />
+                <button
+                  type='button'
+                  onClick={() => setShowPassword(!showPassword)}
+                  className='absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors'
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
               </div>
             </div>
 
