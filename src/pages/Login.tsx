@@ -44,7 +44,7 @@ const Login = () => {
       {/* Immersive Background */}
       <div className='absolute inset-0 z-0'>
         <div className='absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_0%_0%,rgba(37,64,119,0.08)_0%,transparent_50%),radial-gradient(circle_at_100%_100%,rgba(58,90,154,0.08)_0%,transparent_50%)]'></div>
-        <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/[0.02] rounded-full blur-[120px] animate-pulse'></div>
+        <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-200 h-200 bg-primary/2 rounded-full blur-[120px] animate-pulse'></div>
       </div>
 
       {/* Back Button */}
@@ -90,14 +90,14 @@ const Login = () => {
 
           {successMessage && (
             <div className='mb-6 p-4 bg-green-50 border border-green-200 rounded-2xl flex items-start gap-3'>
-              <CheckCircle2 className='w-5 h-5 text-green-600 flex-shrink-0 mt-0.5' />
+              <CheckCircle2 className='w-5 h-5 text-green-600 shrink-0 mt-0.5' />
               <p className='text-sm text-green-800'>{successMessage}</p>
             </div>
           )}
 
           {error && (
             <div className='mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-3'>
-              <AlertCircle className='w-5 h-5 text-red-600 flex-shrink-0 mt-0.5' />
+              <AlertCircle className='w-5 h-5 text-red-600 shrink-0 mt-0.5' />
               <p className='text-sm text-red-800'>{error}</p>
             </div>
           )}
