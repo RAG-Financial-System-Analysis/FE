@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Background Circle -->
+  <circle cx="32" cy="32" r="32" fill="#2A4069"/>
+  
+  <!-- Chart Icon -->
+  <g transform="translate(16, 16)">
+    <!-- Axes -->
+    <path d="M4 4 L4 28 L28 28" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Rising Chart Line -->
+    <path d="M4 24 L10 18 L16 20 L22 12 L28 8" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    
+    <!-- Data Points -->
+    <circle cx="10" cy="18" r="2" fill="#60A5FA"/>
+    <circle cx="16" cy="20" r="2" fill="#60A5FA"/>
+    <circle cx="22" cy="12" r="2" fill="#60A5FA"/>
+    <circle cx="28" cy="8" r="2" fill="#60A5FA"/>
+  </g>
+</svg>
