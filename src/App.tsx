@@ -1,22 +1,21 @@
-import { useState } from 'react'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import './App.css'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LogInPage'
+import SignUpPage from './pages/SignUpPage'
 
 import './index.css'
+
 function App() {
-  const [count, setCount] = useState(0)
-  const path = window.location.pathname
-
-  if (path === "/login") {
-    return <LoginPage />
-  }
-
   return (
     <>
-      <HomePage />
-      
-
+      <Router>
+        <Routes>
+          <Route path='/' element={<HomePage />} />
+          <Route path='/login' element={<LoginPage />} />
+          <Route path='/signup' element={<SignUpPage />} />
+        </Routes>
+      </Router>
     </>
   )
 }
