@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/auth/ProtectedRoute'
+import PublicRoute from './components/auth/PublicRoute'
 import { Loader2 } from 'lucide-react'
 import './index.css'
 import './App.css'
@@ -31,8 +32,22 @@ function App() {
           <Routes>
             {/* Public Routes */}
             <Route path='/' element={<HomePage />} />
-            <Route path='/login' element={<LoginPage />} />
-            <Route path='/register' element={<SignUpPage />} />
+            <Route
+              path='/login'
+              element={
+                <PublicRoute>
+                  <LoginPage />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path='/register'
+              element={
+                <PublicRoute>
+                  <SignUpPage />
+                </PublicRoute>
+              }
+            />
             <Route path='/verify-account' element={<VerifyAccount />} />
 
             {/* Protected Routes - All authenticated users */}

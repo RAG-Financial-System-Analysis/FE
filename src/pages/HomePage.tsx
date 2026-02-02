@@ -10,13 +10,16 @@ import {
   FileText,
   Code,
   Users,
-  Gavel
+  Gavel,
+  User
 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion, type Variants } from 'framer-motion'
+import { useAuth } from '@/context/AuthContext'
 
 function HomePage() {
-  // ❌ remove: const navigate = useNavigate();
+  const navigate = useNavigate()
+  const { isAuthenticated, fullName, role } = useAuth()
 
   const problems = [
     {
@@ -138,18 +141,37 @@ function HomePage() {
             </a>
           </div>
           <div className='flex gap-2'>
-            <Link
-              to='/signup'
-              className='flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#e7edf3] dark:bg-slate-700 text-[#0e141b] dark:text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#d0dbe7] dark:hover:bg-slate-600 transition-colors'
-            >
-              <span className='truncate'>Get Started</span>
-            </Link>
-            <a
-              href='/login'
-              className='flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#e7edf3] dark:bg-slate-700 text-[#0e141b] dark:text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#d0dbe7] dark:hover:bg-slate-600 transition-colors'
-            >
-              <span className='truncate'>Log In</span>
-            </a>
+            {isAuthenticated ? (
+              <>
+                {/* Logged in user - show name and dashboard button */}
+                <div className='flex items-center gap-3 px-4 py-2 bg-slate-50 dark:bg-slate-800 rounded-lg'>
+                  <User className='w-4 h-4 text-[#1773cf]' />
+                  <span className='text-sm font-medium text-[#0e141b] dark:text-white'>{fullName || 'User'}</span>
+                </div>
+                <button
+                  onClick={() => navigate(role === 'Admin' ? '/admin' : '/dashboard')}
+                  className='flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#1773cf] text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#1773cf]/90 transition-colors'
+                >
+                  <span className='truncate'>{role === 'Admin' ? 'Admin Panel' : 'Dashboard'}</span>
+                </button>
+              </>
+            ) : (
+              <>
+                {/* Not logged in - show Get Started and Log In */}
+                <Link
+                  to='/register'
+                  className='flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#e7edf3] dark:bg-slate-700 text-[#0e141b] dark:text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#d0dbe7] dark:hover:bg-slate-600 transition-colors'
+                >
+                  <span className='truncate'>Get Started</span>
+                </Link>
+                <Link
+                  to='/login'
+                  className='flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#e7edf3] dark:bg-slate-700 text-[#0e141b] dark:text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#d0dbe7] dark:hover:bg-slate-600 transition-colors'
+                >
+                  <span className='truncate'>Log In</span>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>

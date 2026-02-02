@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 import { LayoutDashboard, Users, FileText, Settings, LogOut } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/context/AuthContext'
 
 interface AdminLayoutProps {
   children: ReactNode
@@ -8,6 +10,8 @@ interface AdminLayoutProps {
 }
 
 const AdminLayout = ({ children, activeMenu, onMenuChange }: AdminLayoutProps) => {
+  const navigate = useNavigate()
+  const { logout, fullName } = useAuth()
   const menuItems = [
     { name: 'Dashboard', icon: LayoutDashboard },
     { name: 'Access control', icon: Users },
@@ -52,11 +56,17 @@ const AdminLayout = ({ children, activeMenu, onMenuChange }: AdminLayoutProps) =
           <div className='flex items-center gap-3 mb-4'>
             <div className='w-10 h-10 bg-gray-200 rounded-full'></div>
             <div className='flex-1'>
-              <div className='text-sm font-medium text-gray-900'>Admin</div>
-              <div className='text-xs text-gray-500'>minhchotim@gmail.com</div>
+              <div className='text-sm font-medium text-gray-900'>{fullName || 'Admin'}</div>
+              <div className='text-xs text-gray-500'>Administrator</div>
             </div>
           </div>
-          <button className='w-full flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors'>
+          <button
+            onClick={() => {
+              logout()
+              navigate('/login')
+            }}
+            className='w-full flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors'
+          >
             <LogOut className='w-4 h-4' />
             <span className='text-sm font-medium'>Logout</span>
           </button>

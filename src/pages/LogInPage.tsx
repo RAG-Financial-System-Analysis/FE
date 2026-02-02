@@ -1,8 +1,43 @@
 import { useState } from 'react'
-import { Eye, EyeOff, HelpCircle } from 'lucide-react'
+import { Eye, EyeOff, HelpCircle, AlertCircle, Loader2 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import authService from '@/services/auth.service'
+import { useAuth } from '@/context/AuthContext'
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const navigate = useNavigate()
+  const { login } = useAuth()
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    try {
+      const response = await authService.login({ email, password })
+
+      // Update auth context
+      login({ id: '1', email, name: response.fullName }, response.accessToken, response.role, response.fullName)
+
+      // Redirect based on role
+      if (response.role === 'Admin') {
+        navigate('/admin')
+      } else {
+        navigate('/dashboard')
+      }
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } }
+      setError(error.response?.data?.message || 'Login failed. Please check your credentials.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#f6f6f8] dark:bg-[#101622] font-['Inter']">
@@ -60,13 +95,15 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <form
-            className='space-y-6'
-            onSubmit={(e) => {
-              e.preventDefault()
-              // TODO: wire up auth
-            }}
-          >
+          {/* Error Message */}
+          {error && (
+            <div className='mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3'>
+              <AlertCircle className='w-5 h-5 text-red-600 shrink-0 mt-0.5' />
+              <p className='text-sm text-red-800'>{error}</p>
+            </div>
+          )}
+
+          <form className='space-y-6' onSubmit={handleSubmit}>
             {/* Email */}
             <div className='flex flex-col'>
               <label className='text-[#0d121b] dark:text-white text-base font-medium leading-normal pb-2'>
@@ -76,7 +113,11 @@ export default function LoginPage() {
                 type='email'
                 autoComplete='email'
                 placeholder='name@university.edu'
-                className='form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d121b] dark:text-white focus:outline-0 focus:ring-1 focus:ring-[#0f49bd] border border-[#cfd7e7] dark:border-gray-700 bg-white dark:bg-[#101622]/50 h-14 placeholder:text-[#4c669a] p-[15px] text-base font-normal leading-normal'
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={loading}
+                className='form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d121b] dark:text-white focus:outline-0 focus:ring-1 focus:ring-[#0f49bd] border border-[#cfd7e7] dark:border-gray-700 bg-white dark:bg-[#101622]/50 h-14 placeholder:text-[#4c669a] p-[15px] text-base font-normal leading-normal disabled:opacity-50 disabled:cursor-not-allowed'
               />
             </div>
 
@@ -90,13 +131,18 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   autoComplete='current-password'
                   placeholder='Enter your password'
-                  className='form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d121b] dark:text-white focus:outline-0 focus:ring-1 focus:ring-[#0f49bd] border border-[#cfd7e7] dark:border-gray-700 bg-white dark:bg-[#101622]/50 h-14 placeholder:text-[#4c669a] p-[15px] rounded-r-none border-r-0 pr-2 text-base font-normal leading-normal'
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  className='form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d121b] dark:text-white focus:outline-0 focus:ring-1 focus:ring-[#0f49bd] border border-[#cfd7e7] dark:border-gray-700 bg-white dark:bg-[#101622]/50 h-14 placeholder:text-[#4c669a] p-[15px] rounded-r-none border-r-0 pr-2 text-base font-normal leading-normal disabled:opacity-50 disabled:cursor-not-allowed'
                 />
                 <button
                   type='button'
                   onClick={() => setShowPassword((v) => !v)}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  className='text-[#4c669a] flex border border-[#cfd7e7] dark:border-gray-700 bg-white dark:bg-[#101622]/50 items-center justify-center pr-[15px] pl-3 rounded-r-lg border-l-0 cursor-pointer hover:text-[#0f49bd] transition-colors'
+                  disabled={loading}
+                  className='text-[#4c669a] flex border border-[#cfd7e7] dark:border-gray-700 bg-white dark:bg-[#101622]/50 items-center justify-center pr-[15px] pl-3 rounded-r-lg border-l-0 cursor-pointer hover:text-[#0f49bd] transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
                 >
                   {showPassword ? <EyeOff className='w-[18px] h-[18px]' /> : <Eye className='w-[18px] h-[18px]' />}
                 </button>
@@ -117,9 +163,17 @@ export default function LoginPage() {
             {/* Submit */}
             <button
               type='submit'
-              className='flex w-full items-center justify-center overflow-hidden rounded-lg h-14 px-6 bg-[#0f49bd] text-white text-base font-bold leading-normal tracking-wide shadow-lg shadow-[#0f49bd]/20 hover:bg-[#0f49bd]/90 transition-all'
+              disabled={loading}
+              className='flex w-full items-center justify-center overflow-hidden rounded-lg h-14 px-6 bg-[#0f49bd] text-white text-base font-bold leading-normal tracking-wide shadow-lg shadow-[#0f49bd]/20 hover:bg-[#0f49bd]/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed'
             >
-              Login
+              {loading ? (
+                <>
+                  <Loader2 className='w-5 h-5 animate-spin mr-2' />
+                  Signing in...
+                </>
+              ) : (
+                'Sign In to Dashboard'
+              )}
             </button>
           </form>
 
