@@ -1,23 +1,32 @@
-import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
-import { Loader2 } from "lucide-react";
+import { Navigate, Outlet } from 'react-router-dom'
+import { useAuth, type UserRole } from '@/context/AuthContext'
+import { Loader2 } from 'lucide-react'
 
-const ProtectedRoute = () => {
-    const { isAuthenticated, loading } = useAuth();
+interface ProtectedRouteProps {
+  allowedRoles?: UserRole[]
+}
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <Loader2 className="w-10 h-10 text-primary animate-spin" />
-            </div>
-        );
-    }
+const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
+  const { isAuthenticated, loading, hasRole } = useAuth()
 
-    if (!isAuthenticated) {
-        return <Navigate to="/login" replace />;
-    }
+  if (loading) {
+    return (
+      <div className='min-h-screen flex items-center justify-center bg-gray-50'>
+        <Loader2 className='w-10 h-10 text-primary animate-spin' />
+      </div>
+    )
+  }
 
-    return <Outlet />;
-};
+  if (!isAuthenticated) {
+    return <Navigate to='/login' replace />
+  }
 
-export default ProtectedRoute;
+  // Check role-based access if allowedRoles is specified
+  if (allowedRoles && allowedRoles.length > 0 && !hasRole(allowedRoles)) {
+    return <Navigate to='/unauthorized' replace />
+  }
+
+  return <Outlet />
+}
+
+export default ProtectedRoute

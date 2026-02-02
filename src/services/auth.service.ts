@@ -16,10 +16,13 @@ export interface VerifyAccountRequest {
   code: string
 }
 
+export type UserRole = 'Admin' | 'Source' | 'Provider' | 'Analyst' | 'Member'
+
 export interface LoginResponse {
   accessToken: string
   refreshToken: string
-  testRole: string
+  role: UserRole
+  fullName: string
   message?: string
 }
 
@@ -42,17 +45,20 @@ class AuthService {
   // Login user
   async login(data: LoginRequest): Promise<LoginResponse> {
     const response = await axiosInstance.post('/Auth/login', data)
-    const { accessToken, refreshToken, testRole } = response.data
+    const { accessToken, refreshToken, role, fullName } = response.data
 
-    // Save tokens and role to localStorage
+    // Save tokens, role and fullName to localStorage
     if (accessToken) {
       localStorage.setItem('accessToken', accessToken)
     }
     if (refreshToken) {
       localStorage.setItem('refreshToken', refreshToken)
     }
-    if (testRole) {
-      localStorage.setItem('userRole', testRole)
+    if (role) {
+      localStorage.setItem('userRole', role)
+    }
+    if (fullName) {
+      localStorage.setItem('fullName', fullName)
     }
 
     return response.data
@@ -69,11 +75,17 @@ class AuthService {
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
     localStorage.removeItem('userRole')
+    localStorage.removeItem('fullName')
   }
 
   // Get current user role
-  getUserRole(): string | null {
-    return localStorage.getItem('userRole')
+  getUserRole(): UserRole | null {
+    return localStorage.getItem('userRole') as UserRole | null
+  }
+
+  // Get full name
+  getFullName(): string | null {
+    return localStorage.getItem('fullName')
   }
 
   // Check if user is authenticated
@@ -84,12 +96,6 @@ class AuthService {
   // Get access token
   getAccessToken(): string | null {
     return localStorage.getItem('accessToken')
-  }
-
-  // Test role-based access
-  async testAdminAccess(): Promise<any> {
-    const response = await axiosInstance.get('/TestRole/admin-only')
-    return response.data
   }
 }
 

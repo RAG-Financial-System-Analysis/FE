@@ -33,8 +33,9 @@ const VerifyAccount = () => {
           }
         })
       }, 2000)
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Verification failed. Please check your code and try again.')
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } }
+      setError(error.response?.data?.message || 'Verification failed. Please check your code and try again.')
     } finally {
       setLoading(false)
     }
