@@ -20,20 +20,20 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const response = await authService.login({ email, password })
+      const response = await authService.login({ Email: email, Password: password })
 
-      // Update auth context
-      login({ id: '1', email, name: response.fullName }, response.accessToken, response.role, response.fullName)
+      // Update auth context with correct parameters
+      login(response.AccessToken, response.IdToken, response.RefreshToken, response.Role, response.FullName)
 
       // Redirect based on role
-      if (response.role === 'Admin') {
+      if (response.Role === 'Admin') {
         navigate('/admin')
       } else {
         navigate('/dashboard')
       }
     } catch (err) {
-      const error = err as { response?: { data?: { message?: string } } }
-      setError(error.response?.data?.message || 'Login failed. Please check your credentials.')
+      const error = err as { response?: { data?: { Message?: string } } }
+      setError(error.response?.data?.Message || 'Login failed. Please check your credentials.')
     } finally {
       setLoading(false)
     }
@@ -179,6 +179,12 @@ export default function LoginPage() {
 
           {/* Support */}
           <div className='mt-12 flex flex-col items-center gap-4'>
+            <p className='text-sm text-[#4c669a] dark:text-gray-400'>
+              Don't have an account?{' '}
+              <a href='/register' className='text-[#0f49bd] font-semibold hover:underline'>
+                Sign up here
+              </a>
+            </p>
             <p className='text-sm text-[#4c669a] dark:text-gray-400'>Issues with your credentials?</p>
             <button className='flex items-center gap-2 px-6 py-2 border border-[#cfd7e7] dark:border-gray-700 rounded-full text-sm font-semibold text-[#0d121b] dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 transition-colors'>
               <HelpCircle className='w-[18px] h-[18px] text-[#4c669a]' />

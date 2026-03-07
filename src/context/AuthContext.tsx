@@ -1,95 +1,141 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-
-export type UserRole = 'Admin' | 'Source' | 'Provider' | 'Analyst' | 'Member'
-
-interface User {
-  id: string
-  name: string
-  email: string
-  role?: UserRole
-  fullName?: string
-}
+import type { User, UserRole, AuthState } from '@/types/auth.types'
+import authService from '@/services/auth.service'
 
 interface AuthContextType {
+  // State
   user: User | null
-  token: string | null
+  accessToken: string | null
+  idToken: string | null
+  refreshToken: string | null
   role: UserRole | null
   fullName: string | null
-  login: (userData: User, token: string, role: UserRole, fullName: string) => void
-  logout: () => void
   isAuthenticated: boolean
   loading: boolean
+
+  // Actions
+  login: (accessToken: string, idToken: string, refreshToken: string, role: UserRole, fullName: string) => void
+  logout: () => Promise<void>
+
+  // Role checking utilities
   hasRole: (allowedRoles: UserRole[]) => boolean
+  isAdmin: () => boolean
+  isAnalyst: () => boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null)
-  const [token, setToken] = useState<string | null>(null)
-  const [role, setRole] = useState<UserRole | null>(null)
-  const [fullName, setFullName] = useState<string | null>(null)
+  const [authState, setAuthState] = useState<AuthState>({
+    isAuthenticated: false,
+    user: null,
+    accessToken: null,
+    refreshToken: null,
+    idToken: null
+  })
   const [loading, setLoading] = useState(true)
 
+  // Initialize auth state from localStorage
   useEffect(() => {
-    // Hydrate state from localStorage on mount
-    const storedUser = localStorage.getItem('user')
-    const storedToken = localStorage.getItem('token')
-    const storedRole = localStorage.getItem('userRole')
-    const storedFullName = localStorage.getItem('fullName')
-
-    // Use a function to batch state updates
     const initializeAuth = () => {
-      if (storedUser && storedToken) {
-        setUser(JSON.parse(storedUser))
-        setToken(storedToken)
+      const accessToken = authService.getAccessToken()
+      const idToken = authService.getIdToken()
+      const refreshToken = authService.getRefreshToken()
+      const role = authService.getUserRole()
+      const fullName = authService.getFullName()
+
+      if (accessToken && role && fullName) {
+        const user: User = {
+          Id: '', // We don't store user ID in localStorage
+          Email: '', // We don't store email in localStorage
+          FullName: fullName,
+          Role: role
+        }
+
+        setAuthState({
+          isAuthenticated: true,
+          user,
+          accessToken,
+          idToken,
+          refreshToken
+        })
       }
-      if (storedRole) {
-        setRole(storedRole as UserRole)
-      }
-      if (storedFullName) {
-        setFullName(storedFullName)
-      }
+
       setLoading(false)
     }
 
     initializeAuth()
   }, [])
 
-  const login = (userData: User, authToken: string, userRole: UserRole, userFullName: string) => {
-    setUser(userData)
-    setToken(authToken)
-    setRole(userRole)
-    setFullName(userFullName)
-    localStorage.setItem('user', JSON.stringify(userData))
-    localStorage.setItem('token', authToken)
-    localStorage.setItem('userRole', userRole)
-    localStorage.setItem('fullName', userFullName)
+  const login = (accessToken: string, idToken: string, refreshToken: string, role: UserRole, fullName: string) => {
+    const user: User = {
+      Id: '', // Will be populated from API if needed
+      Email: '', // Will be populated from API if needed
+      FullName: fullName,
+      Role: role
+    }
+
+    setAuthState({
+      isAuthenticated: true,
+      user,
+      accessToken,
+      idToken,
+      refreshToken
+    })
   }
 
-  const logout = () => {
-    setUser(null)
-    setToken(null)
-    setRole(null)
-    setFullName(null)
-    localStorage.removeItem('user')
-    localStorage.removeItem('token')
-    localStorage.removeItem('userRole')
-    localStorage.removeItem('fullName')
+  const logout = async () => {
+    try {
+      await authService.logout()
+    } catch (error) {
+      console.error('Logout API call failed:', error)
+      // Continue with local logout even if API fails
+    }
+
+    setAuthState({
+      isAuthenticated: false,
+      user: null,
+      accessToken: null,
+      idToken: null,
+      refreshToken: null
+    })
   }
 
   const hasRole = (allowedRoles: UserRole[]): boolean => {
-    if (!role) return false
-    return allowedRoles.includes(role)
+    if (!authState.user?.Role) return false
+    return allowedRoles.includes(authState.user.Role)
   }
 
-  const isAuthenticated = !!token
+  const isAdmin = (): boolean => {
+    return authState.user?.Role === 'Admin'
+  }
 
-  return (
-    <AuthContext.Provider value={{ user, token, role, fullName, login, logout, isAuthenticated, loading, hasRole }}>
-      {children}
-    </AuthContext.Provider>
-  )
+  const isAnalyst = (): boolean => {
+    return authState.user?.Role === 'Analyst'
+  }
+
+  const contextValue: AuthContextType = {
+    // State
+    user: authState.user,
+    accessToken: authState.accessToken,
+    idToken: authState.idToken,
+    refreshToken: authState.refreshToken,
+    role: authState.user?.Role || null,
+    fullName: authState.user?.FullName || null,
+    isAuthenticated: authState.isAuthenticated,
+    loading,
+
+    // Actions
+    login,
+    logout,
+
+    // Role checking utilities
+    hasRole,
+    isAdmin,
+    isAnalyst
+  }
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
 }
 
 // eslint-disable-next-line react-refresh/only-export-components

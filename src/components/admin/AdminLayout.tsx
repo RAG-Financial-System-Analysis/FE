@@ -57,7 +57,7 @@ const AdminLayout = ({ children, activeMenu, onMenuChange }: AdminLayoutProps) =
             <div className='w-10 h-10 bg-gray-200 rounded-full'></div>
             <div className='flex-1'>
               <div className='text-sm font-medium text-gray-900'>{fullName || 'Admin'}</div>
-              <div className='text-xs text-gray-500'>Administrator</div>
+              <div className='text-xs text-gray-500'>Admin</div>
             </div>
           </div>
           <button

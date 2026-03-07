@@ -44,32 +44,21 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
 
-      try {
-        const refreshToken = localStorage.getItem('refreshToken')
+      // Clear tokens and redirect to login
+      // Note: The backend doesn't have a refresh token endpoint in the API spec
+      // So we just clear tokens and redirect to login
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('idToken')
+      localStorage.removeItem('refreshToken')
+      localStorage.removeItem('userRole')
+      localStorage.removeItem('fullName')
 
-        if (refreshToken) {
-          // Try to refresh the token
-          const response = await axios.post(`${API_URL}/Auth/refresh-token`, {
-            refreshToken
-          })
+      // Only redirect if we're not already on a public route
+      const currentPath = window.location.pathname
+      const publicRoutes = ['/login', '/register', '/verify-account', '/']
 
-          const { accessToken, refreshToken: newRefreshToken } = response.data
-
-          // Save new tokens
-          localStorage.setItem('accessToken', accessToken)
-          localStorage.setItem('refreshToken', newRefreshToken)
-
-          // Retry original request with new token
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`
-          return axiosInstance(originalRequest)
-        }
-      } catch (refreshError) {
-        // Refresh failed, clear tokens and redirect to login
-        localStorage.removeItem('accessToken')
-        localStorage.removeItem('refreshToken')
-        localStorage.removeItem('userRole')
+      if (!publicRoutes.includes(currentPath)) {
         window.location.href = '/login'
-        return Promise.reject(refreshError)
       }
     }
 

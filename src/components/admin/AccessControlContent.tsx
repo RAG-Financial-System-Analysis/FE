@@ -18,35 +18,35 @@ const AccessControlContent = () => {
     {
       name: 'John Doe',
       email: 'john.doe@example.com',
-      role: 'Administrator',
+      role: 'Admin',
       status: 'Active',
       lastActive: '2 minutes ago'
     },
     {
       name: 'Jane Smith',
       email: 'jane.smith@example.com',
-      role: 'Developer',
+      role: 'Analyst',
       status: 'Active',
       lastActive: '15 minutes ago'
     },
     {
       name: 'Bob Johnson',
       email: 'bob.johnson@example.com',
-      role: 'Viewer',
+      role: 'Analyst',
       status: 'Active',
       lastActive: '1 hour ago'
     },
     {
       name: 'Alice Williams',
       email: 'alice.williams@example.com',
-      role: 'Developer',
+      role: 'Analyst',
       status: 'Inactive',
       lastActive: '3 days ago'
     },
     {
       name: 'Charlie Brown',
       email: 'charlie.brown@example.com',
-      role: 'Viewer',
+      role: 'Admin',
       status: 'Suspended',
       lastActive: '1 week ago'
     }
@@ -54,39 +54,37 @@ const AccessControlContent = () => {
 
   const permissions = [
     {
-      category: 'API Management',
-      items: ['api:read', 'api:write', 'api:delete']
-    },
-    {
-      category: 'Configuration',
-      items: ['config:read', 'config:write']
-    },
-    {
       category: 'User Management',
       items: ['users:read', 'users:write', 'users:delete']
     },
     {
-      category: 'Logs & Monitoring',
-      items: ['logs:read', 'monitoring:read']
+      category: 'Company Management',
+      items: ['companies:read', 'companies:write', 'companies:delete']
     },
     {
-      category: 'Access Control',
-      items: ['roles:read', 'roles:write', 'permissions:manage']
+      category: 'Report Management',
+      items: ['reports:read', 'reports:write', 'reports:delete', 'reports:upload']
     },
     {
-      category: 'System Settings',
-      items: ['system:read', 'system:write', 'system:admin']
+      category: 'RAG Chat System',
+      items: ['chat:create', 'chat:read', 'chat:ask']
+    },
+    {
+      category: 'Analytics',
+      items: ['analytics:generate', 'analytics:read', 'analytics:types']
+    },
+    {
+      category: 'System Administration',
+      items: ['admin:statistics', 'admin:audit-logs', 'system:admin']
     }
   ]
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
-      case 'Administrator':
+      case 'Admin':
         return 'bg-purple-100 text-purple-700'
-      case 'Developer':
+      case 'Analyst':
         return 'bg-blue-100 text-blue-700'
-      case 'Viewer':
-        return 'bg-gray-100 text-gray-700'
       default:
         return 'bg-gray-100 text-gray-700'
     }
@@ -212,7 +210,7 @@ const AccessControlContent = () => {
           <div className='flex items-center justify-between mb-6'>
             <div>
               <h1 className='text-2xl font-bold text-gray-900 mb-1'>Role Management</h1>
-              <p className='text-sm text-gray-500'>3 roles configured</p>
+              <p className='text-sm text-gray-500'>2 roles configured</p>
             </div>
             <button className='px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2'>
               <span className='text-lg'>+</span>
@@ -222,15 +220,17 @@ const AccessControlContent = () => {
 
           {/* Roles Cards */}
           <div className='space-y-4 mb-8'>
-            {/* Administrator Role */}
+            {/* Admin Role */}
             <div className='bg-white rounded-xl border border-gray-200 p-6'>
               <div className='flex items-start justify-between mb-4'>
                 <div>
                   <div className='flex items-center gap-3 mb-2'>
-                    <h3 className='text-xl font-bold text-gray-900'>Administrator</h3>
-                    <span className='text-sm text-gray-500'>1 user</span>
+                    <h3 className='text-xl font-bold text-gray-900'>Admin</h3>
+                    <span className='text-sm text-gray-500'>2 users</span>
                   </div>
-                  <p className='text-sm text-gray-600'>Full system access with all permissions</p>
+                  <p className='text-sm text-gray-600'>
+                    Full system access with all permissions including user management
+                  </p>
                 </div>
                 <div className='flex items-center gap-2'>
                   <button className='p-2 hover:bg-gray-100 rounded-lg transition-colors'>
@@ -245,17 +245,16 @@ const AccessControlContent = () => {
                 <div className='text-xs font-medium text-gray-500 uppercase mb-3'>Permissions</div>
                 <div className='flex flex-wrap gap-2'>
                   {[
-                    'api:read',
-                    'api:write',
-                    'api:delete',
-                    'config:read',
-                    'config:write',
-                    'users:read',
-                    'users:write',
-                    'logs:read',
-                    'monitoring:read'
+                    'users:manage',
+                    'companies:crud',
+                    'reports:all',
+                    'analytics:all',
+                    'chat:all',
+                    'admin:statistics',
+                    'admin:audit-logs',
+                    'system:admin'
                   ].map((perm, idx) => (
-                    <span key={idx} className='px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium'>
+                    <span key={idx} className='px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-medium'>
                       {perm}
                     </span>
                   ))}
@@ -263,15 +262,15 @@ const AccessControlContent = () => {
               </div>
             </div>
 
-            {/* Developer Role */}
+            {/* Analyst Role */}
             <div className='bg-white rounded-xl border border-gray-200 p-6'>
               <div className='flex items-start justify-between mb-4'>
                 <div>
                   <div className='flex items-center gap-3 mb-2'>
-                    <h3 className='text-xl font-bold text-gray-900'>Developer</h3>
-                    <span className='text-sm text-gray-500'>2 users</span>
+                    <h3 className='text-xl font-bold text-gray-900'>Analyst</h3>
+                    <span className='text-sm text-gray-500'>3 users</span>
                   </div>
-                  <p className='text-sm text-gray-600'>Can manage API endpoints and view logs</p>
+                  <p className='text-sm text-gray-600'>Can upload reports, use RAG chat, and generate analytics</p>
                 </div>
                 <div className='flex items-center gap-2'>
                   <button className='p-2 hover:bg-gray-100 rounded-lg transition-colors'>
@@ -285,42 +284,13 @@ const AccessControlContent = () => {
               <div>
                 <div className='text-xs font-medium text-gray-500 uppercase mb-3'>Permissions</div>
                 <div className='flex flex-wrap gap-2'>
-                  {['api:read', 'api:write', 'config:read', 'logs:read', 'monitoring:read'].map((perm, idx) => (
-                    <span key={idx} className='px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium'>
-                      {perm}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Viewer Role */}
-            <div className='bg-white rounded-xl border border-gray-200 p-6'>
-              <div className='flex items-start justify-between mb-4'>
-                <div>
-                  <div className='flex items-center gap-3 mb-2'>
-                    <h3 className='text-xl font-bold text-gray-900'>Viewer</h3>
-                    <span className='text-sm text-gray-500'>2 users</span>
-                  </div>
-                  <p className='text-sm text-gray-600'>Read-only access to API and logs</p>
-                </div>
-                <div className='flex items-center gap-2'>
-                  <button className='p-2 hover:bg-gray-100 rounded-lg transition-colors'>
-                    <Edit className='w-4 h-4 text-gray-600' />
-                  </button>
-                  <button className='p-2 hover:bg-gray-100 rounded-lg transition-colors'>
-                    <Trash2 className='w-4 h-4 text-gray-600' />
-                  </button>
-                </div>
-              </div>
-              <div>
-                <div className='text-xs font-medium text-gray-500 uppercase mb-3'>Permissions</div>
-                <div className='flex flex-wrap gap-2'>
-                  {['api:read', 'logs:read', 'monitoring:read'].map((perm, idx) => (
-                    <span key={idx} className='px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium'>
-                      {perm}
-                    </span>
-                  ))}
+                  {['companies:read', 'reports:own', 'reports:public', 'analytics:own', 'chat:own', 'metrics:read'].map(
+                    (perm, idx) => (
+                      <span key={idx} className='px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium'>
+                        {perm}
+                      </span>
+                    )
+                  )}
                 </div>
               </div>
             </div>

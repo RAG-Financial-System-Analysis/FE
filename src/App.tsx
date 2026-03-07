@@ -10,7 +10,7 @@ import './App.css'
 // Lazy load pages for better performance
 const HomePage = lazy(() => import('./pages/HomePage'))
 const LoginPage = lazy(() => import('./pages/LogInPage'))
-const SignUpPage = lazy(() => import('./pages/SignUpPage'))
+const RegisterPage = lazy(() => import('./pages/RegisterPage'))
 const VerifyAccount = lazy(() => import('./pages/VerifyAccount'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const FPTDetail = lazy(() => import('./pages/FPTDetail'))
@@ -44,23 +44,47 @@ function App() {
               path='/register'
               element={
                 <PublicRoute>
-                  <SignUpPage />
+                  <RegisterPage />
                 </PublicRoute>
               }
             />
             <Route path='/verify-account' element={<VerifyAccount />} />
 
             {/* Protected Routes - All authenticated users */}
-            <Route element={<ProtectedRoute />}>
-              <Route path='/dashboard' element={<Dashboard />} />
-              <Route path='/fpt' element={<FPTDetail />} />
-              <Route path='/vinamilk' element={<VinamilkDetail />} />
-            </Route>
+            <Route
+              path='/dashboard'
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/fpt'
+              element={
+                <ProtectedRoute>
+                  <FPTDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/vinamilk'
+              element={
+                <ProtectedRoute>
+                  <VinamilkDetail />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Admin Only Routes */}
-            <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
-              <Route path='/admin' element={<Admin />} />
-            </Route>
+            <Route
+              path='/admin'
+              element={
+                <ProtectedRoute allowedRoles={['Admin']}>
+                  <Admin />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Unauthorized Page */}
             <Route
