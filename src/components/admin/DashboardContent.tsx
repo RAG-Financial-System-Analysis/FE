@@ -16,8 +16,10 @@ const DashboardContent = () => {
       setLoading(true)
       const data = await adminService.getStatistics()
       setStatistics(data)
-    } catch (err: any) {
-      setError(err.response?.data?.Message || 'Failed to load statistics')
+      setError(null)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load statistics'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }

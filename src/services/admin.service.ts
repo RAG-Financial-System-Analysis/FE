@@ -70,35 +70,35 @@ export interface PaginatedResponse<T> {
 class AdminService {
   // Get all users with pagination
   async getUsers(page = 1, pageSize = 10, roleId?: string): Promise<PaginatedResponse<User>> {
-    const params: any = { page, pageSize };
-    if (roleId) params.roleId = roleId;
+    const params: Record<string, string | number> = { page, pageSize }
+    if (roleId) params.roleId = roleId
 
-    const response = await axios.get('/api/admin/users', { params });
-    return response.data;
+    const response = await axios.get('/admin/users', { params })
+    return response.data
   }
 
   // Get user by ID
   async getUserById(id: string): Promise<UserDetail> {
-    const response = await axios.get(`/api/admin/users/${id}`);
-    return response.data;
+    const response = await axios.get(`/admin/users/${id}`)
+    return response.data
   }
 
   // Update user
   async updateUser(id: string, data: UpdateUserRequest): Promise<{ Message: string }> {
-    const response = await axios.put(`/api/admin/users/${id}`, data);
-    return response.data;
+    const response = await axios.put(`/admin/users/${id}`, data)
+    return response.data
   }
 
   // Delete user
   async deleteUser(id: string): Promise<{ Message: string }> {
-    const response = await axios.delete(`/api/admin/users/${id}`);
-    return response.data;
+    const response = await axios.delete(`/admin/users/${id}`)
+    return response.data
   }
 
   // Get system statistics
   async getStatistics(): Promise<SystemStatistics> {
-    const response = await axios.get('/api/admin/statistics');
-    return response.data;
+    const response = await axios.get('/admin/statistics')
+    return response.data
   }
 
   // Get audit logs
@@ -106,15 +106,15 @@ class AdminService {
     page = 1,
     pageSize = 50,
     filters?: {
-      userId?: string;
-      action?: string;
-      startDate?: string;
-      endDate?: string;
+      userId?: string
+      action?: string
+      startDate?: string
+      endDate?: string
     }
   ): Promise<PaginatedResponse<AuditLog>> {
-    const params: any = { page, pageSize, ...filters };
-    const response = await axios.get('/api/admin/audit-logs', { params });
-    return response.data;
+    const params: Record<string, string | number> = { page, pageSize, ...filters }
+    const response = await axios.get('/admin/audit-logs', { params })
+    return response.data
   }
 }
 

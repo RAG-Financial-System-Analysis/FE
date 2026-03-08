@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
-import { adminService, User } from '@/services/admin.service'
+import { useEffect, useState, useCallback } from 'react'
+import type { User } from '@/services/admin.service'
+import { adminService } from '@/services/admin.service'
 import { Edit, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const UserManagementContent = () => {
@@ -10,32 +11,39 @@ const UserManagementContent = () => {
   const [total, setTotal] = useState(0)
   const [pageSize] = useState(10)
   const [searchTerm, setSearchTerm] = useState('')
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadUsers()
-  }, [page])
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       setLoading(true)
       const response = await adminService.getUsers(page, pageSize)
       setUsers(response.Data)
       setTotal(response.Total)
-    } catch (err: any) {
-      setError(err.response?.data?.Message || 'Failed to load users')
+      setError(null)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load users'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
-  }
+  }, [page, pageSize])
+
+  useEffect(() => {
+    loadUsers()
+  }, [loadUsers])
 
   const handleDeleteUser = async (userId: string) => {
     if (!confirm('Are you sure you want to delete this user?')) return
 
     try {
+      setDeletingUserId(userId)
       await adminService.deleteUser(userId)
-      loadUsers() // Reload list
-    } catch (err: any) {
-      alert(err.response?.data?.Message || 'Failed to delete user')
+      await loadUsers() // Reload list
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete user'
+      alert(errorMessage)
+    } finally {
+      setDeletingUserId(null)
     }
   }
 
@@ -147,10 +155,15 @@ const UserManagementContent = () => {
                       </button>
                       <button
                         onClick={() => handleDeleteUser(user.Id)}
-                        className='text-red-600 hover:text-red-900'
+                        disabled={deletingUserId === user.Id}
+                        className='text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed'
                         title='Delete user'
                       >
-                        <Trash2 className='w-4 h-4' />
+                        {deletingUserId === user.Id ? (
+                          <div className='w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin' />
+                        ) : (
+                          <Trash2 className='w-4 h-4' />
+                        )}
                       </button>
                     </div>
                   </td>

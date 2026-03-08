@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
-import { adminService, AuditLog } from '@/services/admin.service'
+import { useEffect, useState, useCallback } from 'react'
+import type { AuditLog } from '@/services/admin.service'
+import { adminService } from '@/services/admin.service'
 import { Filter, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const AuditLogsContent = () => {
@@ -15,22 +16,24 @@ const AuditLogsContent = () => {
     endDate: ''
   })
 
-  useEffect(() => {
-    loadLogs()
-  }, [page, filters])
-
-  const loadLogs = async () => {
+  const loadLogs = useCallback(async () => {
     try {
       setLoading(true)
       const response = await adminService.getAuditLogs(page, pageSize, filters)
       setLogs(response.Data)
       setTotal(response.Total)
-    } catch (err: any) {
-      setError(err.response?.data?.Message || 'Failed to load audit logs')
+      setError(null)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load audit logs'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
-  }
+  }, [page, pageSize, filters])
+
+  useEffect(() => {
+    loadLogs()
+  }, [loadLogs])
 
   const getActionColor = (action: string) => {
     if (action.includes('DELETE')) return 'bg-red-100 text-red-800'
