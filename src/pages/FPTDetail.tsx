@@ -88,11 +88,11 @@ const FPTDetail = () => {
             <div className='flex items-center justify-between mb-4'>
               <span className='text-xs font-semibold text-gray-400 uppercase tracking-wider'>Total Revenue</span>
               <span className='flex items-center gap-1 text-green-500 text-xs font-bold'>
-                <TrendingUp size={14} /> {data.summaryStats.revenue.growth}
+                <TrendingUp size={14} /> {data.summaryStats?.revenue?.growth}
               </span>
             </div>
             <div className='flex items-baseline gap-2'>
-              <span className='text-2xl font-bold text-gray-900'>{data.summaryStats.revenue.value}</span>
+              <span className='text-2xl font-bold text-gray-900'>{data.summaryStats?.revenue?.value}</span>
               <span className='text-sm font-medium text-gray-400'>billion</span>
             </div>
             <div className='text-xs font-medium text-gray-400 mt-1 uppercase'>VND</div>
@@ -103,11 +103,11 @@ const FPTDetail = () => {
             <div className='flex items-center justify-between mb-4'>
               <span className='text-xs font-semibold text-gray-400 uppercase tracking-wider'>Net Profit</span>
               <span className='flex items-center gap-1 text-green-500 text-xs font-bold'>
-                <TrendingUp size={14} /> {data.summaryStats.netProfit.growth}
+                <TrendingUp size={14} /> {data.summaryStats?.netProfit?.growth}
               </span>
             </div>
             <div className='flex items-baseline gap-2'>
-              <span className='text-2xl font-bold text-gray-900'>{data.summaryStats.netProfit.value}</span>
+              <span className='text-2xl font-bold text-gray-900'>{data.summaryStats?.netProfit?.value}</span>
               <span className='text-sm font-medium text-gray-400'>billion VND</span>
             </div>
           </div>
@@ -117,10 +117,10 @@ const FPTDetail = () => {
             <div className='flex items-center justify-between mb-4'>
               <span className='text-xs font-semibold text-gray-400 uppercase tracking-wider'>ROE</span>
               <span className='flex items-center gap-1 text-green-500 text-xs font-bold'>
-                <TrendingUp size={14} /> {data.summaryStats.roe.growth}
+                <TrendingUp size={14} /> {data.summaryStats?.roe?.growth}
               </span>
             </div>
-            <div className='text-2xl font-bold text-gray-900'>{data.summaryStats.roe.value}</div>
+            <div className='text-2xl font-bold text-gray-900'>{data.summaryStats?.roe?.value}</div>
           </div>
 
           {/* Profit Margin Card */}
@@ -128,10 +128,10 @@ const FPTDetail = () => {
             <div className='flex items-center justify-between mb-4'>
               <span className='text-xs font-semibold text-gray-400 uppercase tracking-wider'>Profit Margin</span>
               <span className='flex items-center gap-1 text-green-500 text-xs font-bold'>
-                <TrendingUp size={14} /> {data.summaryStats.profitMargin.growth}
+                <TrendingUp size={14} /> {data.summaryStats?.profitMargin?.growth}
               </span>
             </div>
-            <div className='text-2xl font-bold text-gray-900'>{data.summaryStats.profitMargin.value}</div>
+            <div className='text-2xl font-bold text-gray-900'>{data.summaryStats?.profitMargin?.value}</div>
           </div>
         </div>
 
@@ -192,7 +192,7 @@ const FPTDetail = () => {
                 ))}
               </svg>
               <div className='flex justify-between mt-4 text-[10px] font-bold text-gray-300'>
-                {data.stockTrend.map((t: { label: string; price: number }) => (
+                {data.stockTrend?.map((t: { label: string; price: number }) => (
                   <span key={t.label}>{t.label}</span>
                 ))}
               </div>
@@ -253,7 +253,7 @@ const FPTDetail = () => {
                 </div>
               </div>
               <div className='w-full space-y-3'>
-                {data.revenueStructure.map((item, i: number) => (
+                {data.revenueStructure?.map((item, i: number) => (
                   <div key={i} className='flex items-center justify-between text-xs'>
                     <div className='flex items-center gap-2'>
                       <div className='w-2.5 h-2.5 rounded-full' style={{ backgroundColor: item.color }}></div>
@@ -271,7 +271,7 @@ const FPTDetail = () => {
         <div className='bg-white p-10 rounded-[40px] shadow-[0_10px_50px_rgba(0,0,0,0.04)] border border-gray-50 mb-10 animate-fade-in-up delay-700'>
           <h4 className='text-lg font-bold text-gray-800 mb-12 text-center'>Quarterly Performance</h4>
           <div className='h-[300px] w-full flex items-end justify-between px-10 gap-20'>
-            {data.quarterlyPerformance.map((q, i: number) => (
+            {data.quarterlyPerformance?.map((q, i: number) => (
               <div key={i} className='flex-1 max-w-[120px] flex flex-col items-center gap-4 group'>
                 <div className='w-full flex items-end gap-2 h-[240px]'>
                   <div
@@ -307,7 +307,7 @@ const FPTDetail = () => {
         <div className='bg-white p-10 rounded-[40px] shadow-[0_10px_50px_rgba(0,0,0,0.04)] border border-gray-50 mb-10 animate-fade-in-up delay-800'>
           <h4 className='text-lg font-bold text-gray-800 mb-10'>Financial Ratios</h4>
           <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-            {(Object.entries(data.financialRatios) as [string, { value: string; change: string }][]).map(
+            {(Object.entries(data.financialRatios || {}) as [string, { value: string; change: string }][]).map(
               ([key, ratio]) => (
                 <div
                   key={key}
@@ -342,7 +342,7 @@ const FPTDetail = () => {
               </div>
               <h5 className='font-bold text-gray-800'>Strengths</h5>
             </div>
-            <p className='text-sm text-gray-500 leading-relaxed font-light'>{data.analysis.strengths}</p>
+            <p className='text-sm text-gray-500 leading-relaxed font-light'>{data.analysis?.strengths}</p>
           </div>
 
           <div className='bg-white p-8 rounded-[32px] shadow-[0_10px_40px_rgba(0,0,0,0.03)] border border-gray-50'>
@@ -352,7 +352,7 @@ const FPTDetail = () => {
               </div>
               <h5 className='font-bold text-gray-800'>Opportunities</h5>
             </div>
-            <p className='text-sm text-gray-500 leading-relaxed font-light'>{data.analysis.opportunities}</p>
+            <p className='text-sm text-gray-500 leading-relaxed font-light'>{data.analysis?.opportunities}</p>
           </div>
 
           <div className='bg-white p-8 rounded-[32px] shadow-[0_10px_40px_rgba(0,0,0,0.03)] border border-gray-50'>
@@ -362,7 +362,7 @@ const FPTDetail = () => {
               </div>
               <h5 className='font-bold text-gray-800'>Risks</h5>
             </div>
-            <p className='text-sm text-gray-500 leading-relaxed font-light'>{data.analysis.risks}</p>
+            <p className='text-sm text-gray-500 leading-relaxed font-light'>{data.analysis?.risks}</p>
           </div>
         </div>
       </main>

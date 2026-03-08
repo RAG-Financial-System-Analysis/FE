@@ -1,6 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import type { User, UserRole, AuthState } from '@/types/auth.types'
+import type { User, AuthState } from '@/types/auth.types'
+import { UserRole } from '@/types/auth.types'
 import authService from '@/services/auth.service'
+
+// Re-export UserRole so consumers can import it from AuthContext
+export type { UserRole }
 
 interface AuthContextType {
   // State
