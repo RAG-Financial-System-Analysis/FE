@@ -16,6 +16,9 @@ const Dashboard = lazy(() => import('./pages/Dashboard'))
 const FPTDetail = lazy(() => import('./pages/FPTDetail'))
 const VinamilkDetail = lazy(() => import('./pages/VinamilkDetail'))
 const Admin = lazy(() => import('./pages/Admin'))
+const Report = lazy(() => import('./pages/Report'))
+const AIAssistant = lazy(() => import('./pages/AIAssistant'))
+const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 
 // Loading component
 const PageLoader = () => (
@@ -72,6 +75,30 @@ function App() {
               element={
                 <ProtectedRoute>
                   <VinamilkDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/report'
+              element={
+                <ProtectedRoute>
+                  <Report />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/ai-assistant'
+              element={
+                <ProtectedRoute>
+                  <AIAssistant />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/profile'
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
                 </ProtectedRoute>
               }
             />

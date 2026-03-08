@@ -14,19 +14,30 @@ class AuthService {
   // Register new user
   async register(data: RegisterRequest): Promise<RegisterResponse> {
     const response = await axiosInstance.post('/Auth/register', data)
-    return response.data
+    return {
+      Message: response.data.Message || response.data.message,
+      UserId: response.data.UserId || response.data.userId
+    }
   }
 
   // Verify account with confirmation code
   async verifyAccount(data: VerifyAccountRequest): Promise<VerifyAccountResponse> {
     const response = await axiosInstance.post('/Auth/verify-account', data)
-    return response.data
+    return {
+      Message: response.data.Message || response.data.message
+    }
   }
 
   // Login user
   async login(data: LoginRequest): Promise<LoginResponse> {
     const response = await axiosInstance.post('/Auth/login', data)
-    const { AccessToken, IdToken, RefreshToken, Role, FullName } = response.data
+
+    // Support both PascalCase and camelCase from backend
+    const AccessToken = response.data.AccessToken || response.data.accessToken;
+    const IdToken = response.data.IdToken || response.data.idToken;
+    const RefreshToken = response.data.RefreshToken || response.data.refreshToken;
+    const Role = response.data.Role || response.data.role;
+    const FullName = response.data.FullName || response.data.fullName;
 
     // Save tokens and user info to localStorage
     if (AccessToken) {
@@ -45,7 +56,13 @@ class AuthService {
       localStorage.setItem('fullName', FullName)
     }
 
-    return response.data
+    return {
+      AccessToken,
+      IdToken,
+      RefreshToken,
+      Role,
+      FullName
+    }
   }
 
   // Logout user
@@ -56,7 +73,9 @@ class AuthService {
       // Clear localStorage regardless of API response
       this.clearLocalStorage()
 
-      return response.data
+      return {
+        Message: response.data?.Message || response.data?.message || 'Logged out'
+      }
     } catch (error) {
       // Clear localStorage even if API call fails
       this.clearLocalStorage()
