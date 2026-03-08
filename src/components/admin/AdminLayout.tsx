@@ -14,8 +14,8 @@ const AdminLayout = ({ children, activeMenu, onMenuChange }: AdminLayoutProps) =
   const { logout, fullName } = useAuth()
   const menuItems = [
     { name: 'Dashboard', icon: LayoutDashboard },
-    { name: 'Access control', icon: Users },
-    { name: 'System Logs', icon: FileText },
+    { name: 'User Management', icon: Users },
+    { name: 'Audit Logs', icon: FileText },
     { name: 'System Config', icon: Settings }
   ]
 

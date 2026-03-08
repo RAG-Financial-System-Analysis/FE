@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import AdminLayout from '../components/admin/AdminLayout'
 import DashboardContent from '../components/admin/DashboardContent'
-import AccessControlContent from '../components/admin/AccessControlContent'
+import UserManagementContent from '../components/admin/UserManagementContent'
+import AuditLogsContent from '../components/admin/AuditLogsContent'
 import SystemConfigContent from '../components/admin/SystemConfigContent'
-import SystemLogsContent from '../components/admin/SystemLogsContent'
 
 const Admin = () => {
   const [activeMenu, setActiveMenu] = useState('Dashboard')
@@ -12,12 +12,12 @@ const Admin = () => {
     switch (activeMenu) {
       case 'Dashboard':
         return <DashboardContent />
-      case 'Access control':
-        return <AccessControlContent />
+      case 'User Management':
+        return <UserManagementContent />
+      case 'Audit Logs':
+        return <AuditLogsContent />
       case 'System Config':
         return <SystemConfigContent />
-      case 'System Logs':
-        return <SystemLogsContent />
       default:
         return <DashboardContent />
     }
