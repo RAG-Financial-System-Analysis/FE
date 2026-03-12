@@ -20,20 +20,23 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const response = await authService.login({ Email: email, Password: password })
+      const response = await authService.login({ email: email, password: password })
 
       // Update auth context with correct parameters
-      login(response.AccessToken, response.IdToken, response.RefreshToken, response.Role, response.FullName)
+      login(response.accessToken, response.idToken, response.refreshToken, response.role, response.fullName)
 
       // Redirect based on role
-      if (response.Role === 'Admin') {
+      if (response.role === 'Admin') {
         navigate('/admin')
+      } else if (response.role === 'Analyst') {
+        navigate('/chat')
       } else {
-        navigate('/dashboard')
+        // Fallback for other roles
+        navigate('/chat')
       }
     } catch (err) {
-      const error = err as { response?: { data?: { Message?: string } } }
-      setError(error.response?.data?.Message || 'Login failed. Please check your credentials.')
+      const error = err as { response?: { data?: { message?: string } } }
+      setError(error.response?.data?.message || 'Login failed. Please check your credentials.')
     } finally {
       setLoading(false)
     }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Eye, EyeOff, AlertCircle, Loader2, CheckCircle } from 'lucide-react'
 import { useAuthActions } from '@/hooks/useAuthActions'
 import type { RegisterRequest } from '@/types/auth.types'
 
@@ -8,9 +9,9 @@ export const RegisterForm: React.FC = () => {
   const { register, isRegistering, error, clearError } = useAuthActions()
 
   const [formData, setFormData] = useState<RegisterRequest>({
-    Email: '',
-    Password: '',
-    FullName: ''
+    email: '',
+    password: '',
+    fullName: ''
   })
 
   const [showPassword, setShowPassword] = useState(false)
@@ -39,102 +40,111 @@ export const RegisterForm: React.FC = () => {
       // Navigate to verification page after 2 seconds
       setTimeout(() => {
         navigate('/verify-account', {
-          state: { email: formData.Email }
+          state: { email: formData.email }
         })
       }, 2000)
     }
   }
 
-  const isFormValid = formData.Email && formData.Password && formData.FullName
+  const isFormValid = formData.email && formData.password && formData.fullName
 
   return (
-    <div className='max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md'>
-      <h2 className='text-2xl font-bold text-center mb-6'>Đăng ký tài khoản</h2>
-
+    <div>
+      {/* Success Message */}
       {successMessage && (
-        <div className='mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded'>{successMessage}</div>
+        <div className='mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3'>
+          <CheckCircle className='w-5 h-5 text-green-600 shrink-0 mt-0.5' />
+          <p className='text-sm text-green-800'>{successMessage}</p>
+        </div>
       )}
 
-      {error && <div className='mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded'>{error}</div>}
+      {/* Error Message */}
+      {error && (
+        <div className='mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3'>
+          <AlertCircle className='w-5 h-5 text-red-600 shrink-0 mt-0.5' />
+          <p className='text-sm text-red-800'>{error}</p>
+        </div>
+      )}
 
-      <form onSubmit={handleSubmit} className='space-y-4'>
-        <div>
-          <label htmlFor='FullName' className='block text-sm font-medium text-gray-700 mb-1'>
-            Họ và tên
-          </label>
+      <form className='space-y-6' onSubmit={handleSubmit}>
+        {/* Full Name */}
+        <div className='flex flex-col'>
+          <label className='text-[#0d121b] dark:text-white text-base font-medium leading-normal pb-2'>Họ và tên</label>
           <input
             type='text'
-            id='FullName'
-            name='FullName'
-            value={formData.FullName}
+            id='fullName'
+            name='fullName'
+            value={formData.fullName}
             onChange={handleInputChange}
             required
-            className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
-            placeholder='Nhập họ và tên'
+            disabled={isRegistering}
+            placeholder='Nhập họ và tên đầy đủ'
+            className='form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d121b] dark:text-white focus:outline-0 focus:ring-1 focus:ring-[#0f49bd] border border-[#cfd7e7] dark:border-gray-700 bg-white dark:bg-[#101622]/50 h-14 placeholder:text-[#4c669a] p-[15px] text-base font-normal leading-normal disabled:opacity-50 disabled:cursor-not-allowed'
           />
         </div>
 
-        <div>
-          <label htmlFor='Email' className='block text-sm font-medium text-gray-700 mb-1'>
-            Email
-          </label>
+        {/* Email */}
+        <div className='flex flex-col'>
+          <label className='text-[#0d121b] dark:text-white text-base font-medium leading-normal pb-2'>Email</label>
           <input
             type='email'
-            id='Email'
-            name='Email'
-            value={formData.Email}
+            id='email'
+            name='email'
+            value={formData.email}
             onChange={handleInputChange}
             required
-            className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
-            placeholder='Nhập email'
+            disabled={isRegistering}
+            placeholder='name@example.com'
+            className='form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d121b] dark:text-white focus:outline-0 focus:ring-1 focus:ring-[#0f49bd] border border-[#cfd7e7] dark:border-gray-700 bg-white dark:bg-[#101622]/50 h-14 placeholder:text-[#4c669a] p-[15px] text-base font-normal leading-normal disabled:opacity-50 disabled:cursor-not-allowed'
           />
         </div>
 
-        <div>
-          <label htmlFor='Password' className='block text-sm font-medium text-gray-700 mb-1'>
-            Mật khẩu
-          </label>
-          <div className='relative'>
+        {/* Password */}
+        <div className='flex flex-col'>
+          <label className='text-[#0d121b] dark:text-white text-base font-medium leading-normal pb-2'>Mật khẩu</label>
+          <div className='flex w-full flex-1 items-stretch rounded-lg group'>
             <input
               type={showPassword ? 'text' : 'password'}
-              id='Password'
-              name='Password'
-              value={formData.Password}
+              id='password'
+              name='password'
+              value={formData.password}
               onChange={handleInputChange}
               required
-              className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+              disabled={isRegistering}
               placeholder='Nhập mật khẩu'
+              className='form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d121b] dark:text-white focus:outline-0 focus:ring-1 focus:ring-[#0f49bd] border border-[#cfd7e7] dark:border-gray-700 bg-white dark:bg-[#101622]/50 h-14 placeholder:text-[#4c669a] p-[15px] rounded-r-none border-r-0 pr-2 text-base font-normal leading-normal disabled:opacity-50 disabled:cursor-not-allowed'
             />
             <button
               type='button'
-              onClick={() => setShowPassword(!showPassword)}
-              className='absolute right-3 top-2 text-gray-500 hover:text-gray-700'
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              disabled={isRegistering}
+              className='text-[#4c669a] flex border border-[#cfd7e7] dark:border-gray-700 bg-white dark:bg-[#101622]/50 items-center justify-center pr-[15px] pl-3 rounded-r-lg border-l-0 cursor-pointer hover:text-[#0f49bd] transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
             >
-              {showPassword ? '🙈' : '👁️'}
+              {showPassword ? <EyeOff className='w-[18px] h-[18px]' /> : <Eye className='w-[18px] h-[18px]' />}
             </button>
           </div>
-          <p className='text-xs text-gray-500 mt-1'>
+          <p className='text-xs text-[#4c669a] dark:text-gray-400 mt-2'>
             Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt
           </p>
         </div>
 
+        {/* Submit Button */}
         <button
           type='submit'
           disabled={!isFormValid || isRegistering}
-          className='w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed'
+          className='flex w-full items-center justify-center overflow-hidden rounded-lg h-14 px-6 bg-[#0f49bd] text-white text-base font-bold leading-normal tracking-wide shadow-lg shadow-[#0f49bd]/20 hover:bg-[#0f49bd]/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed'
         >
-          {isRegistering ? 'Đang đăng ký...' : 'Đăng ký'}
+          {isRegistering ? (
+            <>
+              <Loader2 className='w-5 h-5 animate-spin mr-2' />
+              Đang tạo tài khoản...
+            </>
+          ) : (
+            'Tạo tài khoản'
+          )}
         </button>
       </form>
-
-      <div className='mt-4 text-center'>
-        <p className='text-sm text-gray-600'>
-          Đã có tài khoản?{' '}
-          <button onClick={() => navigate('/login')} className='text-blue-600 hover:text-blue-800 font-medium'>
-            Đăng nhập
-          </button>
-        </p>
-      </div>
     </div>
   )
 }

@@ -1,70 +1,70 @@
-import axios from '@/lib/axios';
+import axios from '@/lib/axios'
 
 // Types for Admin API
 export interface User {
-  Id: string;
-  Email: string;
-  FullName: string;
-  Role: string;
-  IsActive: boolean;
-  CreatedAt: string;
-  LastLoginAt?: string;
+  Id: string
+  Email: string
+  FullName: string
+  Role: string
+  IsActive: boolean
+  CreatedAt: string
+  LastLoginAt?: string
 }
 
 export interface UserDetail extends User {
   Statistics: {
-    ReportsUploaded: number;
-    ChatSessions: number;
-  };
+    ReportsUploaded: number
+    ChatSessions: number
+  }
 }
 
 export interface UpdateUserRequest {
-  FullName: string;
-  RoleId: string;
-  IsActive: boolean;
+  FullName: string
+  RoleId: string
+  IsActive: boolean
 }
 
 export interface SystemStatistics {
   Users: {
-    Total: number;
-    Active: number;
+    Total: number
+    Active: number
     ByRole: {
-      Admin: number;
-      Analyst: number;
-    };
-  };
+      Admin: number
+      Analyst: number
+    }
+  }
   Reports: {
-    Total: number;
-    Public: number;
-    Private: number;
-  };
+    Total: number
+    Public: number
+    Private: number
+  }
   ChatSessions: {
-    Total: number;
-    ActiveToday: number;
-  };
+    Total: number
+    ActiveToday: number
+  }
   Storage: {
-    TotalSizeGB: number;
-    FilesCount: number;
-  };
+    TotalSizeGB: number
+    FilesCount: number
+  }
 }
 
 export interface AuditLog {
-  Id: string;
-  UserId: string;
-  UserName: string;
-  Action: string;
-  ResourceType: string;
-  ResourceId: string;
-  Details: string;
-  IpAddress: string;
-  CreatedAt: string;
+  Id: string
+  UserId: string
+  UserName: string
+  Action: string
+  ResourceType: string
+  ResourceId: string
+  Details: string
+  IpAddress: string
+  CreatedAt: string
 }
 
 export interface PaginatedResponse<T> {
-  Total: number;
-  Page: number;
-  PageSize: number;
-  Data: T[];
+  Total: number
+  Page: number
+  PageSize: number
+  Data: T[]
 }
 
 class AdminService {
@@ -118,4 +118,4 @@ class AdminService {
   }
 }
 
-export const adminService = new AdminService();
+export const adminService = new AdminService()

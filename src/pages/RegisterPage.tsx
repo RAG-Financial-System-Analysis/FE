@@ -4,75 +4,97 @@ import { RegisterForm } from '@/components/auth/RegisterForm'
 
 const RegisterPage: React.FC = () => {
   return (
-    <div className='bg-background-light dark:bg-background-dark min-h-screen flex flex-col font-display text-gray-900 dark:text-white'>
-      {/* Top Navigation Bar */}
-      <header className='flex items-center justify-between whitespace-nowrap border-b border-solid border-[#e7ebf3] dark:border-gray-800 bg-white dark:bg-background-dark px-10 py-3'>
-        <div className='flex items-center gap-4 text-primary'>
-          <div className='size-8'>
-            <svg fill='none' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'>
-              <path
-                d='M42.1739 20.1739L27.8261 5.82609C29.1366 7.13663 28.3989 10.1876 26.2002 13.7654C24.8538 15.9564 22.9595 18.3449 20.6522 20.6522C18.3449 22.9595 15.9564 24.8538 13.7654 26.2002C10.1876 28.3989 7.13663 29.1366 5.82609 27.8261L20.1739 42.1739C21.4845 43.4845 24.5355 42.7467 28.1133 40.548C30.3042 39.2016 32.6927 37.3073 35 35C37.3073 32.6927 39.2016 30.3042 40.548 28.1133C42.7467 24.5355 43.4845 21.4845 42.1739 20.1739Z'
-                fill='currentColor'
-              ></path>
-            </svg>
-          </div>
-          <h2 className='text-primary dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]'>
-            RAG Financial Analysis
-          </h2>
-        </div>
-        <div className='flex items-center gap-4'>
-          <span className='text-sm text-gray-500 dark:text-gray-400 hidden sm:block'>Already have an account?</span>
-          <Link to='/login'>
-            <button className='flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal transition-opacity hover:opacity-90'>
-              Log In
-            </button>
-          </Link>
-          <Link to='/'>
-            <button className='flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal transition-opacity hover:opacity-90'>
-              Back To Home
-            </button>
-          </Link>
-        </div>
-      </header>
+    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#f6f6f8] dark:bg-[#101622] font-['Inter']">
+      {/* LEFT PANEL */}
+      <div className='hidden lg:flex lg:w-1/2 relative overflow-hidden bg-[#0f49bd]'>
+        <div
+          className='absolute inset-0 z-0 bg-center bg-no-repeat bg-cover opacity-60'
+          style={{
+            backgroundImage:
+              'url("https://lh3.googleusercontent.com/aida-public/AB6AXuD6MbNSQMvnZBIz4We2G-qWyom0csBeeUtr3lDzyLJUMbvJJ7BuRI0U4WaMGP5ILr_-6jQhiogoEdQRJFpzYyPgt7mKJjjmnfgx5wlL9fgxs8goq6V7Qpm1Fh3tHeuMmR4rVuPLjopu1jqsN5J7jKjtJXOF0L7D3aIX9PdWR71A46fLeEH13UgLg8v_MsnkR69IerCSIHZIU7kFE8QKrbggnMuh02ofaFLGIP5lh-T-gcv8vUhue8sYJ0GklZoWvCsbkaigbgI6KVC_")'
+          }}
+        />
+        <div className='absolute inset-0 z-10 bg-gradient-to-br from-[#0f49bd]/80 to-[#101622]/90' />
 
-      {/* Main Registration Container */}
-      <main className='flex-1 flex items-center justify-center p-6 md:p-12'>
-        <div className='w-full max-w-[640px] bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden'>
-          {/* Header Section */}
-          <div className='p-8 pb-0'>
-            <div className='text-center mb-6'>
-              <h1 className='text-primary dark:text-white text-2xl font-bold mb-2'>Tạo tài khoản mới</h1>
-              <p className='text-gray-500 dark:text-gray-400'>Đăng ký để sử dụng hệ thống phân tích tài chính RAG</p>
+        <div className='relative z-20 flex flex-col justify-between p-12 text-white w-full'>
+          <div className='flex items-center gap-3'>
+            <div className='size-8'>
+              <Logo />
             </div>
+            <span className='text-xl font-bold tracking-tight'>RAG Financial Analysis</span>
+          </div>
+
+          <div className='max-w-md'>
+            <h1 className='text-4xl font-bold leading-tight mb-4'>Join Our Research Platform</h1>
+            <p className='text-lg text-white/80 leading-relaxed'>
+              Create your account to access comprehensive financial analysis tools and institutional datasets designed
+              for academic research.
+            </p>
+          </div>
+
+          <div className='text-sm text-white/60'>© 2026 RAG Financial Analysis. All rights reserved.</div>
+        </div>
+      </div>
+
+      {/* RIGHT PANEL */}
+      <div className='flex flex-1 flex-col items-center justify-center bg-white dark:bg-[#101622] px-6 py-12 lg:px-20'>
+        {/* Mobile Header Only */}
+        <div className='lg:hidden absolute top-8 left-8 flex items-center gap-2'>
+          <div className='size-6 text-[#0f49bd]'>
+            <Logo />
+          </div>
+          <span className='text-lg font-bold text-[#101622] dark:text-white'>RAG Financial Analysis</span>
+        </div>
+
+        <div className='w-full max-w-md'>
+          {/* Back link */}
+          <Link to='/' className='inline-block mb-6 text-sm font-semibold text-[#0f49bd] hover:underline'>
+            ← Back to Home
+          </Link>
+
+          <div className='mb-10'>
+            <h2 className='text-[#0d121b] dark:text-white text-[32px] font-bold leading-tight'>Create Account</h2>
+            <p className='text-[#4c669a] dark:text-gray-400 text-sm font-normal leading-normal mt-2'>
+              Join our financial analysis platform
+            </p>
           </div>
 
           {/* Registration Form */}
-          <div className='p-8 pt-0'>
-            <RegisterForm />
-          </div>
+          <RegisterForm />
 
-          {/* Footer */}
-          <div className='bg-gray-50 dark:bg-gray-800/50 p-6 text-center border-t border-gray-100 dark:border-gray-800'>
-            <p className='text-primary/80 dark:text-gray-400 text-xs font-normal leading-relaxed max-w-sm mx-auto'>
-              Bằng việc tạo tài khoản, bạn đồng ý với{' '}
-              <Link to='#' className='underline text-primary hover:text-blue-700'>
-                Điều khoản dịch vụ
-              </Link>{' '}
-              và{' '}
-              <Link to='#' className='underline text-primary hover:text-blue-700'>
-                Chính sách bảo mật
-              </Link>{' '}
-              của chúng tôi.
+          {/* Support */}
+          <div className='mt-12 flex flex-col items-center gap-4'>
+            <p className='text-sm text-[#4c669a] dark:text-gray-400'>
+              Already have an account?{' '}
+              <Link to='/login' className='text-[#0f49bd] font-semibold hover:underline'>
+                Sign in here
+              </Link>
             </p>
           </div>
         </div>
-      </main>
 
-      {/* Support Footer */}
-      <footer className='p-6 text-center'>
-        <p className='text-gray-400 text-xs'>© 2026 RAG Financial Analysis System. All rights reserved.</p>
-      </footer>
+        <div className='mt-auto pt-8 flex gap-6 text-xs text-[#4c669a] dark:text-gray-500 uppercase tracking-widest font-semibold'>
+          <Link className='hover:text-[#0f49bd] transition-colors' to='#'>
+            Privacy Policy
+          </Link>
+          <Link className='hover:text-[#0f49bd] transition-colors' to='#'>
+            Terms of Service
+          </Link>
+          <Link className='hover:text-[#0f49bd] transition-colors' to='#'>
+            Security
+          </Link>
+        </div>
+      </div>
     </div>
+  )
+}
+
+/* Logo component */
+function Logo() {
+  return (
+    <svg viewBox='0 0 48 48' fill='currentColor' aria-hidden='true'>
+      <path d='M24 4C25.7818 14.2173 33.7827 22.2182 44 24C33.7827 25.7818 25.7818 33.7827 24 44C22.2182 33.7827 14.2173 25.7818 4 24C14.2173 22.2182 22.2182 14.2173 24 4Z' />
+    </svg>
   )
 }
 

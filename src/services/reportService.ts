@@ -87,6 +87,13 @@ class ReportService {
     const response = await axiosInstance.delete(`/reports/${id}`)
     return response.data
   }
+
+  async updateVisibility(id: string, visibility: 'public' | 'private') {
+    const response = await axiosInstance.patch(`/api/reports/${id}/visibility`, {
+      visibility
+    })
+    return response.data
+  }
 }
 
 export default new ReportService()

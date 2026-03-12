@@ -1,63 +1,35 @@
 import axiosInstance from '@/lib/axios'
-
-export interface ChatSession {
-  Id: string
-  Title: string
-  AnalyticsTypeName: string
-  StartTime: string
-  LastMessageAt: string
-  MessageCount: number
-}
-
-export interface ChatMessage {
-  Id: string
-  QuestionText: string
-  ResponseText: string
-  CreatedAt: string
-  Citations?: Citation[]
-}
-
-export interface Citation {
-  ReportId: string
-  Source: string
-}
-
-export interface AnalyticType {
-  Id: string
-  Code: string
-  Name: string
-  Description: string
-}
+import type {
+  CreateChatSessionRequest,
+  CreateChatSessionResponse,
+  AskQuestionRequest,
+  AskQuestionResponse,
+  GetChatHistoryResponse,
+  GetChatSessionsResponse
+} from '@/types/chat.types'
 
 class ChatService {
-  async getAnalyticTypes() {
-    const response = await axiosInstance.get('/analytics/types')
+  // Create new chat session
+  async createSession(data: CreateChatSessionRequest): Promise<CreateChatSessionResponse> {
+    const response = await axiosInstance.post('/api/chat/sessions', data)
     return response.data
   }
 
-  async getMySessions() {
-    const response = await axiosInstance.get('/chat/sessions')
+  // Ask question in chat session
+  async askQuestion(data: AskQuestionRequest): Promise<AskQuestionResponse> {
+    const response = await axiosInstance.post('/api/chat/ask', data)
     return response.data
   }
 
-  async createSession(analyticsTypeId: string, title: string) {
-    const response = await axiosInstance.post('/chat/sessions', {
-      AnalyticsTypeId: analyticsTypeId,
-      Title: title
-    })
+  // Get chat history for a session
+  async getChatHistory(sessionId: string): Promise<GetChatHistoryResponse> {
+    const response = await axiosInstance.get(`/api/chat/sessions/${sessionId}/messages`)
     return response.data
   }
 
-  async askQuestion(sessionId: string, questionText: string) {
-    const response = await axiosInstance.post('/chat/ask', {
-      SessionId: sessionId,
-      QuestionText: questionText
-    })
-    return response.data
-  }
-
-  async getChatHistory(sessionId: string) {
-    const response = await axiosInstance.get(`/chat/sessions/${sessionId}/messages`)
+  // Get all chat sessions for current user
+  async getChatSessions(): Promise<GetChatSessionsResponse> {
+    const response = await axiosInstance.get('/api/chat/sessions')
     return response.data
   }
 }

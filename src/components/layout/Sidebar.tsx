@@ -1,34 +1,34 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Building2, MessageSquare, LayoutDashboard, LogOut, FileBarChart, User } from 'lucide-react'
+import { LayoutDashboard, LogOut, FileBarChart, User, Bot } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { cn } from '@/lib/utils'
 
 const Sidebar = () => {
-  const { logout, user } = useAuth()
+  const { logout, user, hasRole } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
   const menuItems = [
-    {
-      label: 'Dashboard',
-      icon: <LayoutDashboard size={20} />,
-      path: '/dashboard'
-    },
-    {
-      label: 'FPT',
-      icon: <Building2 size={20} />,
-      path: '/fpt'
-    },
-    {
-      label: 'Vinamilk',
-      icon: <Building2 size={20} />,
-      path: '/vinamilk'
-    },
-    {
-      label: 'AI Assistant',
-      icon: <MessageSquare size={20} />,
-      path: '/ai-assistant'
-    },
+    // Dashboard - only for Admin
+    ...(hasRole(['Admin'])
+      ? [
+          {
+            label: 'Dashboard',
+            icon: <LayoutDashboard size={20} />,
+            path: '/dashboard'
+          }
+        ]
+      : []),
+    // Chat feature - only for Analyst and Admin
+    ...(hasRole(['Analyst', 'Admin'])
+      ? [
+          {
+            label: 'AI Chat',
+            icon: <Bot size={20} />,
+            path: '/chat'
+          }
+        ]
+      : []),
     {
       label: 'Report',
       icon: <FileBarChart size={20} />,
@@ -36,12 +36,13 @@ const Sidebar = () => {
     }
   ]
 
-  const initials = user?.FullName
-    ? user.FullName.split(' ')
-      .map((n: string) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2)
+  const initials = user?.fullName
+    ? user.fullName
+        .split(' ')
+        .map((n: string) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
     : 'U'
 
   return (
@@ -55,7 +56,7 @@ const Sidebar = () => {
           <h1 className='text-sm font-bold text-gray-700'>Financial Analyzer</h1>
         </div>
 
-        {/* User Avatar - Clickable → Profile */}
+        {/* Analyst Avatar - Clickable → Profile */}
         <button
           onClick={() => navigate('/profile')}
           className='flex items-center gap-3 mb-8 px-2 w-full rounded-xl py-2 hover:bg-gray-50 transition-colors group text-left'
@@ -64,8 +65,10 @@ const Sidebar = () => {
             {initials}
           </div>
           <div className='flex-1 overflow-hidden'>
-            <span className='font-semibold text-gray-700 text-sm truncate block'>{user?.FullName || 'User'}</span>
-            <span className='text-[10px] text-gray-400 group-hover:text-blue-500 transition-colors'>View Profile →</span>
+            <span className='font-semibold text-gray-700 text-sm truncate block'>{user?.fullName || 'Analyst'}</span>
+            <span className='text-[10px] text-gray-400 group-hover:text-blue-500 transition-colors'>
+              View Profile →
+            </span>
           </div>
           <User size={15} className='text-gray-300 group-hover:text-blue-400 transition-colors shrink-0' />
         </button>

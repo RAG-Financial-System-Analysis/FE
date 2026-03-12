@@ -22,21 +22,21 @@ const VerifyAccount = () => {
     setLoading(true)
 
     try {
-      const response = await authService.verifyAccount({ Email: email, Code: code })
+      const response = await authService.verifyAccount({ email: email, code: code })
       setSuccess(true)
 
       // Redirect to login after 2 seconds
       setTimeout(() => {
         navigate('/login', {
           state: {
-            message: response.Message || 'Account verified successfully! Please login.',
+            message: response.message || 'Account verified successfully! Please login.',
             email: email
           }
         })
       }, 2000)
     } catch (err) {
-      const error = err as { response?: { data?: { Message?: string } } }
-      setError(error.response?.data?.Message || 'Verification failed. Please check your code and try again.')
+      const error = err as { response?: { data?: { message?: string } } }
+      setError(error.response?.data?.message || 'Verification failed. Please check your code and try again.')
     } finally {
       setLoading(false)
     }

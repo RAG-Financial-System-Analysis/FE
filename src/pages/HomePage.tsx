@@ -146,13 +146,13 @@ function HomePage() {
                 {/* Logged in user - show name and dashboard button */}
                 <div className='flex items-center gap-3 px-4 py-2 bg-slate-50 dark:bg-slate-800 rounded-lg'>
                   <User className='w-4 h-4 text-[#1773cf]' />
-                  <span className='text-sm font-medium text-[#0e141b] dark:text-white'>{fullName || 'User'}</span>
+                  <span className='text-sm font-medium text-[#0e141b] dark:text-white'>{fullName || 'Analyst'}</span>
                 </div>
                 <button
-                  onClick={() => navigate(role === 'Admin' ? '/admin' : '/dashboard')}
+                  onClick={() => navigate(role === 'Admin' ? '/admin' : '/chat')}
                   className='flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#1773cf] text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#1773cf]/90 transition-colors'
                 >
-                  <span className='truncate'>{role === 'Admin' ? 'Admin Panel' : 'Dashboard'}</span>
+                  <span className='truncate'>{role === 'Admin' ? 'Admin Panel' : 'AI Chat'}</span>
                 </button>
               </>
             ) : (

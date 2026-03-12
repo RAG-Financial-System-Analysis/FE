@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { LayoutDashboard, Users, FileText, Settings, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, FileText, Settings, LogOut, Building2, FolderOpen } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 
@@ -14,7 +14,15 @@ const AdminLayout = ({ children, activeMenu, onMenuChange }: AdminLayoutProps) =
   const { logout, fullName } = useAuth()
   const menuItems = [
     { name: 'Dashboard', icon: LayoutDashboard },
-    { name: 'User Management', icon: Users },
+    { name: 'Analyst Management', icon: Users },
+    { name: 'Companies', icon: Building2 },
+    {
+      name: 'Reports Management',
+      icon: FolderOpen,
+      displayName: 'Reports\nManagement'
+    },
+    { name: 'Report Categories', icon: FileText },
+    { name: 'Analytics Types', icon: FileText },
     { name: 'Audit Logs', icon: FileText },
     { name: 'System Config', icon: Settings }
   ]
@@ -44,14 +52,18 @@ const AdminLayout = ({ children, activeMenu, onMenuChange }: AdminLayoutProps) =
                   activeMenu === item.name ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
-                <Icon className='w-5 h-5' />
-                <span className='font-medium'>{item.name}</span>
+                <Icon className='w-5 h-5 flex-shrink-0' />
+                <span className='font-medium text-left leading-tight'>
+                  {item.displayName
+                    ? item.displayName.split('\n').map((line, index) => <div key={index}>{line}</div>)
+                    : item.name}
+                </span>
               </button>
             )
           })}
         </nav>
 
-        {/* User Profile */}
+        {/* Analyst Profile */}
         <div className='p-4 border-t border-gray-200'>
           <div className='flex items-center gap-3 mb-4'>
             <div className='w-10 h-10 bg-gray-200 rounded-full'></div>

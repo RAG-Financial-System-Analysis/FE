@@ -1,216 +1,299 @@
 import { useState } from 'react'
-import { Eye, EyeOff, Copy, RefreshCw, Trash2 } from 'lucide-react'
+import { Settings, Zap, CheckCircle, XCircle, AlertCircle, RefreshCw } from 'lucide-react'
+import axiosInstance from '@/lib/axios'
 
-interface Integration {
-  name: string
-  successRate: string
-  apiCalls: string
-  rateLimit: string
-  apiKey: string
-  secretKey: string
-  enabled: boolean
+interface TestResult {
+  status: 'success' | 'error' | 'loading'
+  message: string
+  timestamp: string
+  responseTime?: number
 }
 
 const SystemConfigContent = () => {
-  const [activeTab, setActiveTab] = useState('API & Integration')
-  const [showKeys, setShowKeys] = useState<{ [key: string]: boolean }>({})
+  const [testResult, setTestResult] = useState<TestResult | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const tabs = [
-    { name: 'General settings', icon: '⚙️' },
-    { name: 'Notification', icon: '🔔' },
-    { name: 'API & Integration', icon: '🔗' },
-    { name: 'Webhook', icon: '🪝' }
-  ]
+  const testGeminiConnection = async () => {
+    setIsLoading(true)
+    const startTime = Date.now()
 
-  const [integrations, setIntegrations] = useState<Integration[]>([
-    {
-      name: 'Stripe',
-      successRate: '18.36%',
-      apiCalls: '3618',
-      rateLimit: '3618',
-      apiKey: '••••••••••',
-      secretKey: '••••••••••',
-      enabled: true
-    },
-    {
-      name: 'Paypal',
-      successRate: '18.36%',
-      apiCalls: '3618',
-      rateLimit: '3618',
-      apiKey: '••••••••••',
-      secretKey: '••••••••••',
-      enabled: true
-    },
-    {
-      name: 'Stonks',
-      successRate: '18.36%',
-      apiCalls: '3618',
-      rateLimit: '3618',
-      apiKey: '••••••••••',
-      secretKey: '••••••••••',
-      enabled: true
+    try {
+      setTestResult({
+        status: 'loading',
+        message: 'Đang kiểm tra kết nối Gemini AI...',
+        timestamp: new Date().toLocaleString('vi-VN')
+      })
+
+      const response = await axiosInstance.get('/api/TestAI/openai')
+      const responseTime = Date.now() - startTime
+
+      if (response.data.status === 'success') {
+        setTestResult({
+          status: 'success',
+          message: response.data.message || 'Kết nối Gemini AI thành công!',
+          timestamp: new Date().toLocaleString('vi-VN'),
+          responseTime
+        })
+      } else {
+        setTestResult({
+          status: 'error',
+          message: response.data.message || 'Có lỗi xảy ra khi kiểm tra kết nối',
+          timestamp: new Date().toLocaleString('vi-VN'),
+          responseTime
+        })
+      }
+    } catch (error: unknown) {
+      const responseTime = Date.now() - startTime
+      let errorMessage = 'Không thể kết nối đến Gemini AI'
+
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { message?: string } } }
+        if (axiosError.response?.data?.message) {
+          errorMessage = axiosError.response.data.message
+        }
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        const genericError = error as { message: string }
+        errorMessage = genericError.message
+      }
+
+      setTestResult({
+        status: 'error',
+        message: errorMessage,
+        timestamp: new Date().toLocaleString('vi-VN'),
+        responseTime
+      })
+    } finally {
+      setIsLoading(false)
     }
-  ])
-
-  const toggleKeyVisibility = (integrationName: string, keyType: string) => {
-    const key = `${integrationName}-${keyType}`
-    setShowKeys((prev) => ({ ...prev, [key]: !prev[key] }))
   }
 
-  const toggleIntegration = (index: number) => {
-    setIntegrations((prev) =>
-      prev.map((integration, i) => (i === index ? { ...integration, enabled: !integration.enabled } : integration))
-    )
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'success':
+        return <CheckCircle className='w-5 h-5 text-green-600' />
+      case 'error':
+        return <XCircle className='w-5 h-5 text-red-600' />
+      case 'loading':
+        return <RefreshCw className='w-5 h-5 text-blue-600 animate-spin' />
+      default:
+        return <AlertCircle className='w-5 h-5 text-slate-400' />
+    }
   }
 
-  const removeIntegration = (index: number) => {
-    setIntegrations((prev) => prev.filter((_, i) => i !== index))
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'success':
+        return 'bg-green-50 border-green-200'
+      case 'error':
+        return 'bg-red-50 border-red-200'
+      case 'loading':
+        return 'bg-blue-50 border-blue-200'
+      default:
+        return 'bg-slate-50 border-slate-200'
+    }
+  }
+
+  const getStatusTextColor = (status: string) => {
+    switch (status) {
+      case 'success':
+        return 'text-green-800'
+      case 'error':
+        return 'text-red-800'
+      case 'loading':
+        return 'text-blue-800'
+      default:
+        return 'text-slate-800'
+    }
   }
 
   return (
     <div className='p-8'>
-      {/* Header */}
-      <div className='flex items-center justify-between mb-8'>
-        <h1 className='text-3xl font-bold text-gray-900'>System configuration</h1>
-        <button className='px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors'>
-          Add new Integration
-        </button>
+      <div className='mb-8'>
+        <h1 className='text-3xl font-bold text-slate-900 mb-2'>Cấu Hình Hệ Thống</h1>
+        <p className='text-slate-600'>Kiểm tra và cấu hình các dịch vụ hệ thống</p>
       </div>
 
-      {/* Tabs */}
-      <div className='flex gap-8 mb-8 border-b border-gray-200'>
-        {tabs.map((tab) => (
-          <button
-            key={tab.name}
-            onClick={() => setActiveTab(tab.name)}
-            className={`pb-4 px-2 font-medium transition-colors relative whitespace-nowrap ${
-              activeTab === tab.name ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <span className='mr-2'>{tab.icon}</span>
-            {tab.name}
-            {activeTab === tab.name && <div className='absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600'></div>}
-          </button>
-        ))}
-      </div>
+      {/* AI Service Configuration */}
+      <div className='bg-white rounded-xl p-6 border border-slate-200 shadow-sm mb-6'>
+        <div className='flex items-center gap-3 mb-6'>
+          <div className='w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center'>
+            <Zap className='w-5 h-5 text-purple-600' />
+          </div>
+          <div>
+            <h2 className='text-xl font-semibold text-slate-900'>Dịch Vụ AI</h2>
+            <p className='text-slate-600'>Kiểm tra kết nối và trạng thái dịch vụ Gemini AI</p>
+          </div>
+        </div>
 
-      {/* Integration Cards */}
-      <div className='space-y-6'>
-        {integrations.map((integration, index) => (
-          <div key={index} className='bg-white rounded-xl border border-gray-200 p-6'>
-            {/* Integration Header */}
-            <div className='flex items-center justify-between mb-6'>
-              <h2 className='text-2xl font-bold text-gray-900'>{integration.name}</h2>
-              <label className='relative inline-flex items-center cursor-pointer'>
-                <input
-                  type='checkbox'
-                  checked={integration.enabled}
-                  onChange={() => toggleIntegration(index)}
-                  className='sr-only peer'
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
+        <div className='space-y-4'>
+          {/* Test Button */}
+          <div className='flex items-center gap-4'>
+            <button
+              onClick={testGeminiConnection}
+              disabled={isLoading}
+              className='flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed'
+            >
+              {isLoading ? <RefreshCw className='w-4 h-4 animate-spin' /> : <Zap className='w-4 h-4' />}
+              {isLoading ? 'Đang kiểm tra...' : 'Kiểm Tra Kết Nối Gemini'}
+            </button>
+          </div>
 
-            {/* Stats */}
-            <div className='grid grid-cols-3 gap-6 mb-6'>
-              <div className='bg-gray-50 rounded-lg p-4'>
-                <div className='flex items-center gap-2 text-sm text-gray-500 mb-2'>
-                  <span className='text-purple-500'>📊</span>
-                  Success rate
-                </div>
-                <div className='text-2xl font-bold text-gray-900 mb-1'>{integration.successRate}</div>
-                <div className='text-xs text-gray-500'>last 24hrs</div>
-              </div>
-
-              <div className='bg-gray-50 rounded-lg p-4'>
-                <div className='flex items-center gap-2 text-sm text-gray-500 mb-2'>
-                  <span className='text-blue-500'>📞</span>
-                  Api Call
-                </div>
-                <div className='text-2xl font-bold text-gray-900 mb-1'>{integration.apiCalls}</div>
-                <div className='text-xs text-gray-500'>last 24hrs</div>
-              </div>
-
-              <div className='bg-gray-50 rounded-lg p-4'>
-                <div className='flex items-center gap-2 text-sm text-gray-500 mb-2'>
-                  <span className='text-orange-500'>⚡</span>
-                  Rate Limit
-                </div>
-                <div className='text-2xl font-bold text-gray-900 mb-1'>{integration.rateLimit}</div>
-                <div className='text-xs text-gray-500'>request per day</div>
-              </div>
-            </div>
-
-            {/* API Keys */}
-            <div className='space-y-4 mb-6'>
-              {/* API Key */}
-              <div className='flex items-center gap-4'>
-                <div className='w-24 text-sm font-medium text-gray-700'>API Key</div>
-                <div className='flex-1 flex items-center gap-2'>
-                  <div className='flex-1 bg-gray-50 rounded-lg px-4 py-3 font-mono text-sm'>
-                    {showKeys[`${integration.name}-api`] ? 'sk_live_51234567890abcdef' : integration.apiKey}
+          {/* Test Result */}
+          {testResult && (
+            <div className={`rounded-xl p-4 border ${getStatusColor(testResult.status)}`}>
+              <div className='flex items-start gap-3'>
+                {getStatusIcon(testResult.status)}
+                <div className='flex-1'>
+                  <div className='flex items-center justify-between mb-2'>
+                    <h3 className={`font-medium ${getStatusTextColor(testResult.status)}`}>Kết Quả Kiểm Tra</h3>
+                    <span className='text-sm text-slate-500'>{testResult.timestamp}</span>
                   </div>
-                  <button
-                    onClick={() => toggleKeyVisibility(integration.name, 'api')}
-                    className='p-2 hover:bg-gray-100 rounded-lg transition-colors'
-                  >
-                    {showKeys[`${integration.name}-api`] ? (
-                      <EyeOff className='w-5 h-5 text-gray-600' />
-                    ) : (
-                      <Eye className='w-5 h-5 text-gray-600' />
-                    )}
-                  </button>
-                  <button className='p-2 hover:bg-gray-100 rounded-lg transition-colors'>
-                    <Copy className='w-5 h-5 text-gray-600' />
-                  </button>
-                  <button className='px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-2'>
-                    <RefreshCw className='w-4 h-4' />
-                    Generate
-                  </button>
-                </div>
-              </div>
-
-              {/* Secret Key */}
-              <div className='flex items-center gap-4'>
-                <div className='w-24 text-sm font-medium text-gray-700'>Secret Key</div>
-                <div className='flex-1 flex items-center gap-2'>
-                  <div className='flex-1 bg-gray-50 rounded-lg px-4 py-3 font-mono text-sm'>
-                    {showKeys[`${integration.name}-secret`] ? 'sk_test_51234567890abcdef' : integration.secretKey}
-                  </div>
-                  <button
-                    onClick={() => toggleKeyVisibility(integration.name, 'secret')}
-                    className='p-2 hover:bg-gray-100 rounded-lg transition-colors'
-                  >
-                    {showKeys[`${integration.name}-secret`] ? (
-                      <EyeOff className='w-5 h-5 text-gray-600' />
-                    ) : (
-                      <Eye className='w-5 h-5 text-gray-600' />
-                    )}
-                  </button>
-                  <button className='p-2 hover:bg-gray-100 rounded-lg transition-colors'>
-                    <Copy className='w-5 h-5 text-gray-600' />
-                  </button>
-                  <button className='px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-2'>
-                    <RefreshCw className='w-4 h-4' />
-                    Generate
-                  </button>
+                  <p className={`text-sm ${getStatusTextColor(testResult.status)} mb-2`}>{testResult.message}</p>
+                  {testResult.responseTime && (
+                    <p className='text-xs text-slate-500'>Thời gian phản hồi: {testResult.responseTime}ms</p>
+                  )}
                 </div>
               </div>
             </div>
+          )}
 
-            {/* Remove Button */}
-            <div className='flex justify-end'>
-              <button
-                onClick={() => removeIntegration(index)}
-                className='px-4 py-2 text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors flex items-center gap-2'
-              >
-                <Trash2 className='w-4 h-4' />
-                Remove Integration
-              </button>
+          {/* Service Info */}
+          <div className='bg-slate-50 rounded-lg p-4'>
+            <h4 className='font-medium text-slate-900 mb-2'>Thông Tin Dịch Vụ</h4>
+            <div className='space-y-2 text-sm'>
+              <div className='flex items-center justify-between'>
+                <span className='text-slate-600'>Nhà cung cấp:</span>
+                <span className='text-slate-900 font-medium'>Google Gemini AI</span>
+              </div>
+              <div className='flex items-center justify-between'>
+                <span className='text-slate-600'>Model:</span>
+                <span className='text-slate-900 font-medium'>gemini-2.5-flash</span>
+              </div>
+              <div className='flex items-center justify-between'>
+                <span className='text-slate-600'>Endpoint:</span>
+                <span className='text-slate-900 font-medium'>/api/TestAI/openai</span>
+              </div>
             </div>
           </div>
-        ))}
+        </div>
+      </div>
+
+      {/* Other System Configurations */}
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+        {/* Database Configuration */}
+        <div className='bg-white rounded-xl p-6 border border-slate-200 shadow-sm'>
+          <div className='flex items-center gap-3 mb-4'>
+            <div className='w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center'>
+              <Settings className='w-4 h-4 text-green-600' />
+            </div>
+            <h3 className='text-lg font-semibold text-slate-900'>Cơ Sở Dữ Liệu</h3>
+          </div>
+          <div className='space-y-3'>
+            <div className='flex items-center justify-between'>
+              <span className='text-sm text-slate-600'>Trạng thái:</span>
+              <span className='text-sm text-green-600 font-medium'>Hoạt động</span>
+            </div>
+            <div className='flex items-center justify-between'>
+              <span className='text-sm text-slate-600'>Loại:</span>
+              <span className='text-sm text-slate-900'>SQL Server</span>
+            </div>
+            <div className='flex items-center justify-between'>
+              <span className='text-sm text-slate-600'>Kết nối:</span>
+              <span className='text-sm text-slate-900'>Ổn định</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Storage Configuration */}
+        <div className='bg-white rounded-xl p-6 border border-slate-200 shadow-sm'>
+          <div className='flex items-center gap-3 mb-4'>
+            <div className='w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center'>
+              <Settings className='w-4 h-4 text-orange-600' />
+            </div>
+            <h3 className='text-lg font-semibold text-slate-900'>Lưu Trữ</h3>
+          </div>
+          <div className='space-y-3'>
+            <div className='flex items-center justify-between'>
+              <span className='text-sm text-slate-600'>Trạng thái:</span>
+              <span className='text-sm text-green-600 font-medium'>Hoạt động</span>
+            </div>
+            <div className='flex items-center justify-between'>
+              <span className='text-sm text-slate-600'>Loại:</span>
+              <span className='text-sm text-slate-900'>Local Storage</span>
+            </div>
+            <div className='flex items-center justify-between'>
+              <span className='text-sm text-slate-600'>Dung lượng:</span>
+              <span className='text-sm text-slate-900'>Đủ</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Authentication Configuration */}
+        <div className='bg-white rounded-xl p-6 border border-slate-200 shadow-sm'>
+          <div className='flex items-center gap-3 mb-4'>
+            <div className='w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center'>
+              <Settings className='w-4 h-4 text-blue-600' />
+            </div>
+            <h3 className='text-lg font-semibold text-slate-900'>Xác Thực</h3>
+          </div>
+          <div className='space-y-3'>
+            <div className='flex items-center justify-between'>
+              <span className='text-sm text-slate-600'>Trạng thái:</span>
+              <span className='text-sm text-green-600 font-medium'>Hoạt động</span>
+            </div>
+            <div className='flex items-center justify-between'>
+              <span className='text-sm text-slate-600'>Loại:</span>
+              <span className='text-sm text-slate-900'>JWT Token</span>
+            </div>
+            <div className='flex items-center justify-between'>
+              <span className='text-sm text-slate-600'>Bảo mật:</span>
+              <span className='text-sm text-slate-900'>Cao</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Email Configuration */}
+        <div className='bg-white rounded-xl p-6 border border-slate-200 shadow-sm'>
+          <div className='flex items-center gap-3 mb-4'>
+            <div className='w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center'>
+              <Settings className='w-4 h-4 text-purple-600' />
+            </div>
+            <h3 className='text-lg font-semibold text-slate-900'>Email</h3>
+          </div>
+          <div className='space-y-3'>
+            <div className='flex items-center justify-between'>
+              <span className='text-sm text-slate-600'>Trạng thái:</span>
+              <span className='text-sm text-yellow-600 font-medium'>Chưa cấu hình</span>
+            </div>
+            <div className='flex items-center justify-between'>
+              <span className='text-sm text-slate-600'>SMTP:</span>
+              <span className='text-sm text-slate-900'>Chưa thiết lập</span>
+            </div>
+            <div className='flex items-center justify-between'>
+              <span className='text-sm text-slate-600'>Gửi email:</span>
+              <span className='text-sm text-slate-900'>Tạm dừng</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* System Information */}
+      <div className='mt-6 bg-white rounded-xl p-6 border border-slate-200 shadow-sm'>
+        <h3 className='text-lg font-semibold text-slate-900 mb-4'>Thông Tin Hệ Thống</h3>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+          <div>
+            <h4 className='font-medium text-slate-900 mb-2'>Phiên Bản</h4>
+            <p className='text-sm text-slate-600'>RAG System v1.0.0</p>
+          </div>
+          <div>
+            <h4 className='font-medium text-slate-900 mb-2'>Môi Trường</h4>
+            <p className='text-sm text-slate-600'>Production</p>
+          </div>
+          <div>
+            <h4 className='font-medium text-slate-900 mb-2'>Cập Nhật Cuối</h4>
+            <p className='text-sm text-slate-600'>{new Date().toLocaleDateString('vi-VN')}</p>
+          </div>
+        </div>
       </div>
     </div>
   )

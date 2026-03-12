@@ -1,4 +1,3 @@
-import React from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import type { UserRole } from '@/types/auth.types'
@@ -10,7 +9,7 @@ interface ProtectedRouteProps {
   redirectTo?: string
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   allowedRoles = [],
   requireAuth = true,
@@ -47,16 +46,18 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   return <>{children}</>
 }
 
+export { ProtectedRoute }
+
 // Convenience components for specific roles
-export const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+export const AdminRoute = ({ children }: { children: React.ReactNode }) => (
   <ProtectedRoute allowedRoles={['Admin']}>{children}</ProtectedRoute>
 )
 
-export const AnalystRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+export const AnalystRoute = ({ children }: { children: React.ReactNode }) => (
   <ProtectedRoute allowedRoles={['Admin', 'Analyst']}>{children}</ProtectedRoute>
 )
 
-export const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+export const PublicRoute = ({ children }: { children: React.ReactNode }) => (
   <ProtectedRoute requireAuth={false}>{children}</ProtectedRoute>
 )
 

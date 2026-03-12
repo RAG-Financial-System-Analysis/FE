@@ -13,68 +13,72 @@ import type {
 class AuthService {
   // Register new user
   async register(data: RegisterRequest): Promise<RegisterResponse> {
-    const response = await axiosInstance.post('/Auth/register', data)
+    const response = await axiosInstance.post('/api/Auth/register', data)
     return {
-      Message: response.data.Message || response.data.message,
-      UserId: response.data.UserId || response.data.userId
+      message: response.data.message,
+      userId: response.data.userId
     }
   }
 
   // Verify account with confirmation code
   async verifyAccount(data: VerifyAccountRequest): Promise<VerifyAccountResponse> {
-    const response = await axiosInstance.post('/Auth/verify-account', data)
+    const response = await axiosInstance.post('/api/Auth/verify-account', data)
     return {
-      Message: response.data.Message || response.data.message
+      message: response.data.message
     }
   }
 
   // Login user
   async login(data: LoginRequest): Promise<LoginResponse> {
-    const response = await axiosInstance.post('/Auth/login', data)
+    const response = await axiosInstance.post('/api/Auth/login', data)
 
-    // Support both PascalCase and camelCase from backend
-    const AccessToken = response.data.AccessToken || response.data.accessToken;
-    const IdToken = response.data.IdToken || response.data.idToken;
-    const RefreshToken = response.data.RefreshToken || response.data.refreshToken;
-    const Role = response.data.Role || response.data.role;
-    const FullName = response.data.FullName || response.data.fullName;
+    // Extract response data (API returns camelCase)
+    const accessToken = response.data.accessToken
+    const idToken = response.data.idToken
+    const refreshToken = response.data.refreshToken
+    const role = response.data.role
+    const fullName = response.data.fullName
+    const email = response.data.email || data.email // Use email from response or fallback to login email
 
     // Save tokens and user info to localStorage
-    if (AccessToken) {
-      localStorage.setItem('accessToken', AccessToken)
+    if (accessToken) {
+      localStorage.setItem('accessToken', accessToken)
     }
-    if (IdToken) {
-      localStorage.setItem('idToken', IdToken)
+    if (idToken) {
+      localStorage.setItem('idToken', idToken)
     }
-    if (RefreshToken) {
-      localStorage.setItem('refreshToken', RefreshToken)
+    if (refreshToken) {
+      localStorage.setItem('refreshToken', refreshToken)
     }
-    if (Role) {
-      localStorage.setItem('userRole', Role)
+    if (role) {
+      localStorage.setItem('userRole', role)
     }
-    if (FullName) {
-      localStorage.setItem('fullName', FullName)
+    if (fullName) {
+      localStorage.setItem('fullName', fullName)
+    }
+    if (email) {
+      localStorage.setItem('userEmail', email)
     }
 
     return {
-      AccessToken,
-      IdToken,
-      RefreshToken,
-      Role,
-      FullName
+      accessToken,
+      idToken,
+      refreshToken,
+      role,
+      fullName
     }
   }
 
   // Logout user
   async logout(): Promise<LogoutResponse> {
     try {
-      const response = await axiosInstance.post('/Auth/logout')
+      const response = await axiosInstance.post('/api/Auth/logout')
 
       // Clear localStorage regardless of API response
       this.clearLocalStorage()
 
       return {
-        Message: response.data?.Message || response.data?.message || 'Logged out'
+        message: response.data?.message || 'Logged out'
       }
     } catch (error) {
       // Clear localStorage even if API call fails
@@ -90,6 +94,7 @@ class AuthService {
     localStorage.removeItem('refreshToken')
     localStorage.removeItem('userRole')
     localStorage.removeItem('fullName')
+    localStorage.removeItem('userEmail')
   }
 
   // Get current user role
@@ -101,6 +106,11 @@ class AuthService {
   // Get full name
   getFullName(): string | null {
     return localStorage.getItem('fullName')
+  }
+
+  // Get email
+  getEmail(): string | null {
+    return localStorage.getItem('userEmail')
   }
 
   // Check if user is authenticated
@@ -144,16 +154,17 @@ class AuthService {
   getCurrentUser() {
     const role = this.getUserRole()
     const fullName = this.getFullName()
+    const email = this.getEmail()
 
     if (!role || !fullName) return null
 
     return {
-      Role: role,
-      FullName: fullName,
-      // Note: We don't store Id and Email in localStorage for security
-      // These should be fetched from API if needed
-      Id: '',
-      Email: ''
+      role: role,
+      fullName: fullName,
+      email: email || '',
+      // Note: We don't store id in localStorage for security
+      // This should be fetched from API if needed
+      id: ''
     }
   }
 }

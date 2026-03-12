@@ -13,8 +13,8 @@ export const LoginForm: React.FC = () => {
   const wasVerified = location.state?.verified || false
 
   const [formData, setFormData] = useState<LoginRequest>({
-    Email: emailFromState,
-    Password: ''
+    email: emailFromState,
+    password: ''
   })
 
   const [showPassword, setShowPassword] = useState(false)
@@ -48,15 +48,15 @@ export const LoginForm: React.FC = () => {
   const getDefaultRoute = (role?: string) => {
     switch (role) {
       case 'Admin':
-        return '/admin/dashboard'
+        return '/admin'
       case 'Analyst':
-        return '/dashboard'
+        return '/chat'
       default:
-        return '/dashboard'
+        return '/chat'
     }
   }
 
-  const isFormValid = formData.Email && formData.Password
+  const isFormValid = formData.email && formData.password
 
   return (
     <div className='max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md'>
@@ -79,7 +79,7 @@ export const LoginForm: React.FC = () => {
             type='email'
             id='Email'
             name='Email'
-            value={formData.Email}
+            value={formData.email}
             onChange={handleInputChange}
             required
             className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
@@ -96,7 +96,7 @@ export const LoginForm: React.FC = () => {
               type={showPassword ? 'text' : 'password'}
               id='Password'
               name='Password'
-              value={formData.Password}
+              value={formData.password}
               onChange={handleInputChange}
               required
               className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'

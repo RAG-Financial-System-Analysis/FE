@@ -72,10 +72,10 @@ export const AuthExample: React.FC = () => {
               <strong>Role:</strong> {role}
             </p>
             <p>
-              <strong>User ID:</strong> {user?.Id || 'Not stored locally'}
+              <strong>User ID:</strong> {user?.id || 'Not stored locally'}
             </p>
             <p>
-              <strong>Email:</strong> {user?.Email || 'Not stored locally'}
+              <strong>Email:</strong> {user?.email || 'Not stored locally'}
             </p>
           </div>
         </div>

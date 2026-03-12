@@ -40,12 +40,12 @@ export const useAuthActions = (): UseAuthActionsReturn => {
       const response = await authService.register(data)
       return {
         success: true,
-        message: response.Message,
-        userId: response.UserId
+        message: response.message,
+        userId: response.userId
       }
     } catch (err: unknown) {
       const errorMessage =
-        (err as { response?: { data?: { Message?: string } } })?.response?.data?.Message ||
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
         'Registration failed. Please try again.'
       setError(errorMessage)
       return {
@@ -65,11 +65,11 @@ export const useAuthActions = (): UseAuthActionsReturn => {
       const response = await authService.verifyAccount(data)
       return {
         success: true,
-        message: response.Message
+        message: response.message
       }
     } catch (err: unknown) {
       const errorMessage =
-        (err as { response?: { data?: { Message?: string } } })?.response?.data?.Message ||
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
         'Verification failed. Please try again.'
       setError(errorMessage)
       return {
@@ -89,16 +89,16 @@ export const useAuthActions = (): UseAuthActionsReturn => {
       const response = await authService.login(data)
 
       // Update context with login data
-      contextLogin(response.AccessToken, response.IdToken, response.RefreshToken, response.Role, response.FullName)
+      contextLogin(response.accessToken, response.idToken, response.refreshToken, response.role, response.fullName)
 
       return {
         success: true,
         message: 'Login successful',
-        role: response.Role
+        role: response.role
       }
     } catch (err: unknown) {
       const errorMessage =
-        (err as { response?: { data?: { Message?: string } } })?.response?.data?.Message ||
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
         'Login failed. Please check your credentials.'
       setError(errorMessage)
       return {
@@ -122,7 +122,7 @@ export const useAuthActions = (): UseAuthActionsReturn => {
       }
     } catch (err: unknown) {
       const errorMessage =
-        (err as { response?: { data?: { Message?: string } } })?.response?.data?.Message || 'Logout failed'
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Logout failed'
       setError(errorMessage)
       return {
         success: false,

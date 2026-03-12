@@ -12,8 +12,8 @@ export const VerifyAccountForm: React.FC = () => {
   const emailFromState = location.state?.email || ''
 
   const [formData, setFormData] = useState<VerifyAccountRequest>({
-    Email: emailFromState,
-    Code: ''
+    email: emailFromState,
+    code: ''
   })
 
   const [successMessage, setSuccessMessage] = useState('')
@@ -41,13 +41,13 @@ export const VerifyAccountForm: React.FC = () => {
       // Navigate to login page after 2 seconds
       setTimeout(() => {
         navigate('/login', {
-          state: { email: formData.Email, verified: true }
+          state: { email: formData.email, verified: true }
         })
       }, 2000)
     }
   }
 
-  const isFormValid = formData.Email && formData.Code
+  const isFormValid = formData.email && formData.code
 
   return (
     <div className='max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md'>
@@ -74,7 +74,7 @@ export const VerifyAccountForm: React.FC = () => {
             type='email'
             id='Email'
             name='Email'
-            value={formData.Email}
+            value={formData.email}
             onChange={handleInputChange}
             required
             className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
@@ -90,7 +90,7 @@ export const VerifyAccountForm: React.FC = () => {
             type='text'
             id='Code'
             name='Code'
-            value={formData.Code}
+            value={formData.code}
             onChange={handleInputChange}
             required
             maxLength={6}

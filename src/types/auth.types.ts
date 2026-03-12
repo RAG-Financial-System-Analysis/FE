@@ -1,9 +1,9 @@
 // User interface matching API specification
 export interface User {
-  Id: string
-  Email: string
-  FullName: string
-  Role: UserRole
+  id: string
+  email: string
+  fullName: string
+  role: UserRole
 }
 
 // Authentication state interface
@@ -23,47 +23,47 @@ export const UserRole = {
 
 export type UserRole = (typeof UserRole)[keyof typeof UserRole]
 
-// Authentication request interfaces (PascalCase to match API)
+// Authentication request interfaces (camelCase to match API)
 export interface RegisterRequest {
-  Email: string
-  Password: string
-  FullName: string
+  email: string
+  password: string
+  fullName: string
 }
 
 export interface LoginRequest {
-  Email: string
-  Password: string
+  email: string
+  password: string
 }
 
 export interface VerifyAccountRequest {
-  Email: string
-  Code: string
+  email: string
+  code: string
 }
 
-// Authentication response interfaces (PascalCase to match API)
+// Authentication response interfaces (camelCase to match API)
 export interface RegisterResponse {
-  Message: string
-  UserId: string
+  message: string
+  userId: string
 }
 
 export interface LoginResponse {
-  AccessToken: string
-  IdToken: string
-  RefreshToken: string
-  Role: UserRole
-  FullName: string
+  accessToken: string
+  idToken: string
+  refreshToken: string
+  role: UserRole
+  fullName: string
 }
 
 export interface VerifyAccountResponse {
-  Message: string
+  message: string
 }
 
 export interface LogoutResponse {
-  Message: string
+  message: string
 }
 
 // Error response interface
 export interface ApiErrorResponse {
-  Message: string
-  Details?: string
+  message: string
+  details?: string
 }

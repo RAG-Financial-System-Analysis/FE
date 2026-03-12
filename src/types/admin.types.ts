@@ -1,65 +1,146 @@
+// Admin related types
+
 export interface User {
-  Id: string;
-  Email: string;
-  FullName: string;
-  Role: string;
-  IsActive: boolean;
-  CreatedAt: string;
-  LastLoginAt?: string;
+  id: string
+  email: string
+  fullName: string
+  role: string
+  isActive: boolean
+  createdAt: string
+  lastLoginAt: string | null
 }
 
 export interface UserDetail extends User {
-  Statistics: {
-    ReportsUploaded: number;
-    ChatSessions: number;
-  };
+  statistics: {
+    reportsUploaded: number
+    chatSessions: number
+    analyticsGenerated: number
+  }
+}
+
+export interface GetUsersRequest {
+  page?: number
+  pageSize?: number
+  roleId?: string
+}
+
+export interface GetUsersResponse {
+  users: User[]
+  totalCount: number
 }
 
 export interface UpdateUserRequest {
-  FullName: string;
-  RoleId: string;
-  IsActive: boolean;
+  fullName: string
+  role: string
+  isActive: boolean
 }
 
 export interface SystemStatistics {
-  Users: {
-    Total: number;
-    Active: number;
-    ByRole: {
-      Admin: number;
-      Analyst: number;
-    };
-  };
-  Reports: {
-    Total: number;
-    Public: number;
-    Private: number;
-  };
-  ChatSessions: {
-    Total: number;
-    ActiveToday: number;
-  };
-  Storage: {
-    TotalSizeGB: number;
-    FilesCount: number;
-  };
+  users: {
+    total: number
+    active: number
+    admins: number
+    analysts: number
+  }
+  reports: {
+    total: number
+    thisMonth: number
+    public: number
+    private: number
+  }
+  chatSessions: {
+    total: number
+    thisMonth: number
+    averageMessagesPerSession: number
+  }
+  analytics: {
+    reportsGenerated: number
+    thisMonth: number
+  }
+  storage: {
+    totalSizeGB: number
+    averageFileSizeMB: number
+  }
 }
 
 export interface AuditLog {
-  Id: string;
-  UserId: string;
-  UserName: string;
-  Action: string;
-  ResourceType: string;
-  ResourceId: string;
-  Details: string;
-  IpAddress: string;
-  CreatedAt: string;
+  id: string
+  userId: string
+  userEmail: string
+  action: string
+  details: string
+  ipAddress: string
+  userAgent: string
+  timestamp: string
 }
 
-export interface PaginatedResponse<T> {
-  Total: number;
-  Page: number;
-  PageSize: number;
-  Data: T[];
+export interface GetAuditLogsRequest {
+  userId?: string
+  action?: string
+  startDate?: string
+  endDate?: string
+  page?: number
+  pageSize?: number
+}
+
+export interface GetAuditLogsResponse {
+  logs: AuditLog[]
+  totalCount: number
+}
+
+export interface ReportCategory {
+  id: string
+  name: string
+  description: string
+  createdAt: string
+  associatedReportsCount?: number
+  associatedReports?: AssociatedReport[]
+}
+
+export interface AssociatedReport {
+  id: string
+  title: string
+  companyName: string
+  createdAt: string
+}
+
+export interface CreateReportCategoryRequest {
+  name: string
+  description: string
+}
+
+export interface UpdateReportCategoryRequest {
+  name: string
+  description: string
+}
+
+export interface GetReportCategoriesResponse {
+  categories: ReportCategory[]
+  totalCount: number
+}
+
+// Analytics Types interfaces
+export interface AnalyticsType {
+  id: string
+  code: string
+  name: string
+  description?: string
+  createdAt: string
+}
+
+export interface CreateAnalyticsTypeRequest {
+  code: string
+  name: string
+  description?: string
+}
+
+export interface UpdateAnalyticsTypeRequest {
+  code: string
+  name: string
+  description?: string
+}
+
+export interface GetAnalyticsTypesResponse {
+  analyticsTypes: AnalyticsType[]
+  totalCount: number
 }
