@@ -17,6 +17,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src')
     }
   },
+  base: '/', // Ensure correct base path for deployment
   build: {
     rollupOptions: {
       output: {
