@@ -2,8 +2,13 @@ import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useChat } from '@/hooks/useChat'
+import { useAnalytics } from '@/hooks/useAnalytics'
+import { useReports } from '@/hooks/useReports'
 import { CreateSessionModal } from './CreateSessionModal'
+import { BarChart3, FileText } from 'lucide-react'
+import toast from 'react-hot-toast'
 import type { ChatSession } from '@/types/chat.types'
+import type { Report } from '@/types/reports.types'
 
 export const ChatInterface: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -26,6 +31,15 @@ export const ChatInterface: React.FC = () => {
     setCurrentSession,
     clearError
   } = useChat()
+
+  const { generateReport } = useAnalytics()
+  const { myReports, publicReports, loadMyReports, loadPublicReports } = useReports()
+
+  const [showGenerateModal, setShowGenerateModal] = useState(false)
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null)
+  const [reportTitle, setReportTitle] = useState('')
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [reportType, setReportType] = useState<'my' | 'public'>('my')
 
   // Load sessions on component mount
   useEffect(() => {
@@ -77,6 +91,41 @@ export const ChatInterface: React.FC = () => {
       hour: '2-digit',
       minute: '2-digit'
     })
+  }
+
+  const handleGenerateAnalytics = async () => {
+    if (!currentSession || !selectedReport || !reportTitle.trim()) {
+      toast.error('Vui lòng điền đầy đủ thông tin')
+      return
+    }
+
+    setIsGenerating(true)
+    try {
+      const result = await generateReport({
+        sessionId: currentSession.id,
+        reportFinancialId: selectedReport.id,
+        title: reportTitle.trim()
+      })
+
+      if (result.success) {
+        toast.success('Tạo báo cáo phân tích thành công!')
+        setShowGenerateModal(false)
+        setSelectedReport(null)
+        setReportTitle('')
+      } else {
+        toast.error(result.message)
+      }
+    } catch (error) {
+      toast.error('Có lỗi xảy ra khi tạo báo cáo')
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  const openGenerateModal = () => {
+    setShowGenerateModal(true)
+    loadMyReports() // Load reports when opening modal
+    loadPublicReports() // Load public reports too
   }
 
   // Filter sessions based on search text
@@ -330,21 +379,10 @@ export const ChatInterface: React.FC = () => {
           <>
             {/* Chat Header */}
             <div className='p-6 bg-white/80 backdrop-blur-sm border-b border-slate-200/60 shadow-sm'>
-              <div className='flex items-center gap-4'>
-                <div className='w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg'>
-                  <svg className='w-5 h-5 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth={2}
-                      d='M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z'
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className='font-semibold text-slate-900 text-lg'>{currentSession.title}</h3>
-                  <p className='text-sm text-slate-500 flex items-center gap-2'>
-                    <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <div className='flex items-center justify-between'>
+                <div className='flex items-center gap-4'>
+                  <div className='w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg'>
+                    <svg className='w-5 h-5 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                       <path
                         strokeLinecap='round'
                         strokeLinejoin='round'
@@ -352,20 +390,43 @@ export const ChatInterface: React.FC = () => {
                         d='M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z'
                       />
                     </svg>
-                    {currentSession.analyticsTypeName}
-                  </p>
-                  <p className='text-xs text-slate-400 flex items-center gap-2 mt-1'>
-                    <svg className='w-3 h-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeWidth={2}
-                        d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'
-                      />
-                    </svg>
-                    Tạo lúc {new Date(currentSession.startTime).toLocaleString('vi-VN')}
-                  </p>
+                  </div>
+                  <div>
+                    <h3 className='font-semibold text-slate-900 text-lg'>{currentSession.title}</h3>
+                    <p className='text-sm text-slate-500 flex items-center gap-2'>
+                      <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth={2}
+                          d='M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z'
+                        />
+                      </svg>
+                      {currentSession.analyticsTypeName}
+                    </p>
+                    <p className='text-xs text-slate-400 flex items-center gap-2 mt-1'>
+                      <svg className='w-3 h-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth={2}
+                          d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'
+                        />
+                      </svg>
+                      Tạo lúc {new Date(currentSession.startTime).toLocaleString('vi-VN')}
+                    </p>
+                  </div>
                 </div>
+
+                {/* Generate Analytics Button */}
+                <Button
+                  onClick={openGenerateModal}
+                  variant='outline'
+                  className='flex items-center gap-2 bg-white/80 hover:bg-white border-slate-300 text-slate-700 hover:text-slate-900'
+                >
+                  <BarChart3 className='w-4 h-4' />
+                  Tạo báo cáo phân tích
+                </Button>
               </div>
             </div>
             {/* Messages Area */}
@@ -684,6 +745,168 @@ export const ChatInterface: React.FC = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onSessionCreated={handleSessionCreated}
       />
+
+      {/* Generate Analytics Modal */}
+      {showGenerateModal && (
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'>
+          <div className='bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto'>
+            <div className='p-6 border-b border-gray-200'>
+              <h2 className='text-xl font-bold text-gray-900 flex items-center gap-2'>
+                <BarChart3 className='w-5 h-5 text-blue-600' />
+                Tạo Báo Cáo Phân Tích
+              </h2>
+              <p className='text-gray-600 mt-1'>Tạo báo cáo phân tích từ session chat hiện tại</p>
+            </div>
+
+            <div className='p-6 space-y-6'>
+              {/* Session Info */}
+              <div className='bg-blue-50 rounded-lg p-4'>
+                <h3 className='font-medium text-blue-900 mb-2'>Session hiện tại</h3>
+                <p className='text-blue-800 text-sm'>{currentSession?.title}</p>
+                <p className='text-blue-600 text-xs mt-1'>ID: {currentSession?.id}</p>
+              </div>
+
+              {/* Title Input */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Tiêu đề báo cáo <span className='text-red-500'>*</span>
+                </label>
+                <Input
+                  type='text'
+                  value={reportTitle}
+                  onChange={(e) => setReportTitle(e.target.value)}
+                  placeholder='Nhập tiêu đề cho báo cáo phân tích'
+                  className='w-full'
+                />
+              </div>
+
+              {/* Report Type Selection */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Loại báo cáo</label>
+                <div className='flex gap-2 mb-3'>
+                  <Button
+                    type='button'
+                    variant={reportType === 'my' ? 'default' : 'outline'}
+                    size='sm'
+                    onClick={() => {
+                      setReportType('my')
+                      setSelectedReport(null)
+                    }}
+                    className='flex items-center gap-1'
+                  >
+                    <FileText className='w-4 h-4' />
+                    Báo cáo của tôi ({myReports.length})
+                  </Button>
+                  <Button
+                    type='button'
+                    variant={reportType === 'public' ? 'default' : 'outline'}
+                    size='sm'
+                    onClick={() => {
+                      setReportType('public')
+                      setSelectedReport(null)
+                    }}
+                    className='flex items-center gap-1'
+                  >
+                    <BarChart3 className='w-4 h-4' />
+                    Báo cáo công khai ({publicReports.length})
+                  </Button>
+                </div>
+              </div>
+
+              {/* Report Selection */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Chọn báo cáo tài chính <span className='text-red-500'>*</span>
+                </label>
+                <div className='border border-gray-300 rounded-lg max-h-60 overflow-y-auto'>
+                  {(reportType === 'my' ? myReports : publicReports).length === 0 ? (
+                    <div className='p-4 text-center text-gray-500'>
+                      <FileText className='w-8 h-8 mx-auto mb-2 text-gray-400' />
+                      <p>Không có báo cáo nào</p>
+                      <p className='text-xs mt-1'>
+                        {reportType === 'my'
+                          ? 'Vui lòng upload báo cáo tài chính trước'
+                          : 'Chưa có báo cáo công khai nào'}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className='divide-y divide-gray-200'>
+                      {(reportType === 'my' ? myReports : publicReports).map((report) => (
+                        <div
+                          key={report.id}
+                          className={`p-3 cursor-pointer hover:bg-gray-50 transition-colors ${
+                            selectedReport?.id === report.id ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
+                          }`}
+                          onClick={() => setSelectedReport(report)}
+                        >
+                          <div className='flex items-start gap-3'>
+                            <div
+                              className={`w-4 h-4 rounded-full border-2 mt-1 ${
+                                selectedReport?.id === report.id ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                              }`}
+                            >
+                              {selectedReport?.id === report.id && (
+                                <div className='w-2 h-2 bg-white rounded-full mx-auto mt-0.5'></div>
+                              )}
+                            </div>
+                            <div className='flex-1 min-w-0'>
+                              <p className='font-medium text-gray-900 truncate'>{report.fileName}</p>
+                              <div className='flex items-center gap-4 text-xs text-gray-500 mt-1'>
+                                <span>{report.companyName}</span>
+                                <span>
+                                  {report.year} - {report.period}
+                                </span>
+                                {report.visibility === 'public' && (
+                                  <span className='bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs'>
+                                    Công khai
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className='flex justify-end gap-3 pt-4 border-t border-gray-200'>
+                <Button
+                  type='button'
+                  variant='outline'
+                  onClick={() => {
+                    setShowGenerateModal(false)
+                    setSelectedReport(null)
+                    setReportTitle('')
+                  }}
+                  disabled={isGenerating}
+                >
+                  Hủy
+                </Button>
+                <Button
+                  onClick={handleGenerateAnalytics}
+                  disabled={isGenerating || !selectedReport || !reportTitle.trim()}
+                  className='flex items-center gap-2'
+                >
+                  {isGenerating ? (
+                    <>
+                      <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin' />
+                      Đang tạo...
+                    </>
+                  ) : (
+                    <>
+                      <BarChart3 className='w-4 h-4' />
+                      Tạo báo cáo
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

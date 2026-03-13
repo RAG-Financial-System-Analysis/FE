@@ -1,10 +1,26 @@
 import { ChatInterface } from '@/components/chat/ChatInterface'
+import AnalyticsReportsViewer from '@/components/analytics/AnalyticsReportsViewer'
 import { useAuth } from '@/context/AuthContext'
 import { Navigate } from 'react-router-dom'
 import Sidebar from '@/components/layout/Sidebar'
+import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 
 const ChatPage: React.FC = () => {
   const { isAuthenticated, hasRole, fullName } = useAuth()
+  const location = useLocation()
+  const [currentView, setCurrentView] = useState<'chat' | 'analytics'>('chat')
+
+  // Update view based on URL hash or query params
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search)
+    const view = searchParams.get('view')
+    if (view === 'analytics') {
+      setCurrentView('analytics')
+    } else {
+      setCurrentView('chat')
+    }
+  }, [location])
 
   // Check if user is authenticated and has Analyst or Admin role
   if (!isAuthenticated) {
@@ -35,9 +51,36 @@ const ChatPage: React.FC = () => {
     )
   }
 
+  const renderContent = () => {
+    console.log('Current view:', currentView) // Debug log
+    if (currentView === 'analytics') {
+      return (
+        <div className='h-full overflow-auto'>
+          <AnalyticsReportsViewer />
+        </div>
+      )
+    }
+    return <ChatInterface />
+  }
+
+  const getHeaderTitle = () => {
+    if (currentView === 'analytics') {
+      return {
+        title: 'Analytics Reports',
+        subtitle: 'Xem và quản lý báo cáo phân tích AI'
+      }
+    }
+    return {
+      title: 'AI Assistant Chat',
+      subtitle: 'Phân tích báo cáo tài chính thông minh'
+    }
+  }
+
+  const headerInfo = getHeaderTitle()
+
   return (
     <div className='flex min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 font-outfit'>
-      <Sidebar />
+      <Sidebar onViewChange={setCurrentView} currentView={currentView} />
 
       <main className='flex-1 ml-64'>
         {/* Header */}
@@ -56,8 +99,8 @@ const ChatPage: React.FC = () => {
               </div>
               <div className='flex items-center gap-3'>
                 <div>
-                  <h1 className='text-xl font-bold text-slate-900'>AI Assistant Chat</h1>
-                  <span className='text-xs text-slate-500'>Phân tích báo cáo tài chính thông minh</span>
+                  <h1 className='text-xl font-bold text-slate-900'>{headerInfo.title}</h1>
+                  <span className='text-xs text-slate-500'>{headerInfo.subtitle}</span>
                 </div>
                 <span className='px-2 py-0.5 text-xs bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 rounded-full font-medium border border-blue-200'>
                   Analyst Tool
@@ -72,9 +115,7 @@ const ChatPage: React.FC = () => {
         </div>
 
         {/* Chat Content */}
-        <div className='h-[calc(100vh-5rem)]'>
-          <ChatInterface />
-        </div>
+        <div className='h-[calc(100vh-5rem)]'>{renderContent()}</div>
       </main>
     </div>
   )

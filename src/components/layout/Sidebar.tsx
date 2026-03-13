@@ -1,12 +1,60 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { LayoutDashboard, LogOut, FileBarChart, User, Bot } from 'lucide-react'
+import { LayoutDashboard, LogOut, FileBarChart, User, Bot, BarChart3 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { cn } from '@/lib/utils'
 
-const Sidebar = () => {
+interface SidebarProps {
+  onViewChange?: (view: 'chat' | 'analytics') => void
+  currentView?: 'chat' | 'analytics'
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ onViewChange, currentView }) => {
   const { logout, user, hasRole } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+
+  const handleItemClick = (item: any) => {
+    console.log('Item clicked:', item.label, 'viewType:', item.viewType, 'currentPath:', location.pathname) // Debug log
+
+    // If clicking Create Analytics
+    if (item.viewType === 'analytics') {
+      if (location.pathname === '/chat') {
+        // Already on chat page, just switch view
+        console.log('Switching to analytics view') // Debug log
+        onViewChange?.('analytics')
+      } else {
+        // Navigate to chat page first, then switch view will happen via useEffect
+        console.log('Navigating to /chat with analytics view') // Debug log
+        navigate('/chat?view=analytics')
+      }
+    }
+    // If clicking AI Chat
+    else if (item.path === '/chat' && !item.viewType) {
+      if (location.pathname === '/chat') {
+        // Already on chat page, just switch to chat view
+        console.log('Switching to chat view') // Debug log
+        onViewChange?.('chat')
+      } else {
+        // Navigate to chat page
+        console.log('Navigating to /chat') // Debug log
+        navigate('/chat')
+      }
+    }
+    // Other items - navigate normally
+    else {
+      console.log('Navigating to:', item.path) // Debug log
+      navigate(item.path)
+    }
+  }
+
+  const isItemActive = (item: any) => {
+    if (location.pathname === '/chat') {
+      if (item.path === '/chat' && currentView === 'chat') return true
+      if (item.viewType === 'analytics' && currentView === 'analytics') return true
+      return false
+    }
+    return location.pathname === item.path
+  }
 
   const menuItems = [
     // Dashboard - only for Admin
@@ -33,7 +81,18 @@ const Sidebar = () => {
       label: 'Report',
       icon: <FileBarChart size={20} />,
       path: '/report'
-    }
+    },
+    // Create Analytics - only for Analyst and Admin
+    ...(hasRole(['Analyst', 'Admin'])
+      ? [
+          {
+            label: 'Create Analytics',
+            icon: <BarChart3 size={20} />,
+            path: '/chat',
+            viewType: 'analytics'
+          }
+        ]
+      : [])
   ]
 
   const initials = user?.fullName
@@ -75,11 +134,11 @@ const Sidebar = () => {
 
         <nav className='space-y-1'>
           {menuItems.map((item) => {
-            const isActive = location.pathname === item.path
+            const isActive = isItemActive(item)
             return (
               <button
-                key={item.path}
-                onClick={() => navigate(item.path)}
+                key={`${item.path}-${item.viewType || 'default'}`}
+                onClick={() => handleItemClick(item)}
                 className={cn(
                   'flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all font-medium text-sm',
                   isActive

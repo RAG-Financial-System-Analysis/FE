@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { Navigate } from 'react-router-dom'
-import { BarChart3, MessageSquare, FileText, User, LogOut, Menu, X } from 'lucide-react'
+import { BarChart3, MessageSquare, FileText, User, LogOut, Menu, X, TrendingUp } from 'lucide-react'
 import { ChatInterface } from '@/components/chat/ChatInterface'
+import AnalyticsReportsViewer from '@/components/analytics/AnalyticsReportsViewer'
+import CreateAnalyticsReport from '@/components/analytics/CreateAnalyticsReport'
 
-type AnalystView = 'chat' | 'reports'
+type AnalystView = 'chat' | 'reports' | 'analytics'
 
 interface AnalystLayoutProps {
   defaultView?: AnalystView
@@ -52,10 +54,16 @@ const AnalystLayout: React.FC<AnalystLayoutProps> = ({ defaultView = 'chat' }) =
       description: 'Trợ lý AI'
     },
     {
+      id: 'analytics' as AnalystView,
+      name: 'View Analytics',
+      icon: TrendingUp,
+      description: 'Xem báo cáo phân tích'
+    },
+    {
       id: 'reports' as AnalystView,
-      name: 'Reports',
+      name: 'Create Analytics',
       icon: FileText,
-      description: 'Báo cáo tài chính'
+      description: 'Tạo báo cáo phân tích'
     }
   ]
 
@@ -67,11 +75,16 @@ const AnalystLayout: React.FC<AnalystLayoutProps> = ({ defaultView = 'chat' }) =
             <ChatInterface />
           </div>
         )
+      case 'analytics':
+        return (
+          <div className='h-full overflow-auto'>
+            <AnalyticsReportsViewer />
+          </div>
+        )
       case 'reports':
         return (
-          <div className='p-6'>
-            <h2 className='text-2xl font-bold mb-4'>Reports</h2>
-            <p className='text-gray-600'>Báo cáo tài chính sẽ được hiển thị ở đây.</p>
+          <div className='h-full overflow-auto'>
+            <CreateAnalyticsReport />
           </div>
         )
       default:

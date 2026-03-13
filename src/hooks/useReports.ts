@@ -11,6 +11,7 @@ import type {
 
 interface UseReportsReturn {
   // State
+  reports: Report[] // Alias for myReports for backward compatibility
   myReports: Report[]
   publicReports: Report[]
   currentReport: ReportDetail | null
@@ -287,6 +288,7 @@ export const useReports = (): UseReportsReturn => {
 
   return {
     // State
+    reports: myReports, // Alias for backward compatibility
     myReports,
     publicReports,
     currentReport,
