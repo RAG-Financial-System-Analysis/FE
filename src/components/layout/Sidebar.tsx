@@ -14,17 +14,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onViewChange, currentView }) => {
   const location = useLocation()
 
   const handleItemClick = (item: any) => {
-    console.log('Item clicked:', item.label, 'viewType:', item.viewType, 'currentPath:', location.pathname) // Debug log
-
     // If clicking Create Analytics
     if (item.viewType === 'analytics') {
       if (location.pathname === '/chat') {
         // Already on chat page, just switch view
-        console.log('Switching to analytics view') // Debug log
         onViewChange?.('analytics')
+        // Update URL to reflect the view change
+        window.history.replaceState({}, '', '/chat?view=analytics')
       } else {
-        // Navigate to chat page first, then switch view will happen via useEffect
-        console.log('Navigating to /chat with analytics view') // Debug log
+        // Navigate to chat page with analytics view
         navigate('/chat?view=analytics')
       }
     }
@@ -32,17 +30,16 @@ const Sidebar: React.FC<SidebarProps> = ({ onViewChange, currentView }) => {
     else if (item.path === '/chat' && !item.viewType) {
       if (location.pathname === '/chat') {
         // Already on chat page, just switch to chat view
-        console.log('Switching to chat view') // Debug log
         onViewChange?.('chat')
+        // Update URL to remove view parameter
+        window.history.replaceState({}, '', '/chat')
       } else {
         // Navigate to chat page
-        console.log('Navigating to /chat') // Debug log
         navigate('/chat')
       }
     }
     // Other items - navigate normally
     else {
-      console.log('Navigating to:', item.path) // Debug log
       navigate(item.path)
     }
   }

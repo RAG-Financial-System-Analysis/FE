@@ -15,12 +15,15 @@ const ChatPage: React.FC = () => {
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search)
     const view = searchParams.get('view')
+    console.log('URL changed, view param:', view, 'current view:', currentView) // Debug log
+
     if (view === 'analytics') {
       setCurrentView('analytics')
-    } else {
+    } else if (view === null && location.search === '') {
+      // Only set to chat if URL has no view parameter
       setCurrentView('chat')
     }
-  }, [location])
+  }, [location.search]) // Only depend on search params, not currentView
 
   // Check if user is authenticated and has Analyst or Admin role
   if (!isAuthenticated) {
@@ -52,7 +55,6 @@ const ChatPage: React.FC = () => {
   }
 
   const renderContent = () => {
-    console.log('Current view:', currentView) // Debug log
     if (currentView === 'analytics') {
       return (
         <div className='h-full overflow-auto'>
