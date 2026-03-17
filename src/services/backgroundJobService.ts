@@ -45,14 +45,16 @@ class BackgroundJobService {
     return id
   }
 
-  // Start polling for a job with exponential backoff
+  // Start polling for a job with different strategies based on job type
   private startPolling(jobId: string) {
     const job = this.jobs.get(jobId)
     if (!job) return
 
-    let pollInterval = 15000 // Start with 15 seconds
-    const maxInterval = 30000 // Max 30 seconds
-    const backoffMultiplier = 1.2 // Increase by 20% each time
+    // Different polling strategies based on job type
+    const isChat = job.type === 'chat'
+    let pollInterval = isChat ? 10000 : 15000 // Chat: 10s, Others: 15s
+    const maxInterval = isChat ? 10000 : 30000 // Chat: fixed 10s, Others: max 30s
+    const backoffMultiplier = 1.2 // Only used for non-chat jobs
     const maxDuration = 30 * 60 * 1000 // Max 30 minutes timeout
 
     const poll = async () => {
@@ -71,20 +73,30 @@ class BackgroundJobService {
         } else if (status.status === 'failed') {
           this.handleJobError(jobId, status.errorMessage || 'Job failed')
         } else {
-          // Still processing - increase interval with exponential backoff
-          pollInterval = Math.min(pollInterval * backoffMultiplier, maxInterval)
+          // Still processing - different strategies for different job types
+          if (!isChat) {
+            // Non-chat jobs: use exponential backoff
+            pollInterval = Math.min(pollInterval * backoffMultiplier, maxInterval)
+          }
+          // Chat jobs: keep fixed 10-second interval (no backoff)
 
           // Schedule next poll
           const timeout = window.setTimeout(poll, pollInterval)
           this.pollingIntervals.set(jobId, timeout)
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error(`Polling error for job ${jobId}:`, error)
 
         // Handle rate limiting (429 Too Many Requests)
-        if (error.response?.status === 429) {
-          pollInterval = Math.min(pollInterval * 2, maxInterval)
-          console.warn(`Rate limited for job ${jobId}, backing off to ${pollInterval}ms`)
+        if ((error as { response?: { status?: number } })?.response?.status === 429) {
+          if (!isChat) {
+            // Non-chat jobs: increase interval on rate limit
+            pollInterval = Math.min(pollInterval * 2, maxInterval)
+            console.warn(`Rate limited for job ${jobId}, backing off to ${pollInterval}ms`)
+          } else {
+            // Chat jobs: keep fixed interval even on rate limit
+            console.warn(`Rate limited for chat job ${jobId}, maintaining ${pollInterval}ms interval`)
+          }
         }
 
         // Continue polling with current interval (don't give up on network errors)
