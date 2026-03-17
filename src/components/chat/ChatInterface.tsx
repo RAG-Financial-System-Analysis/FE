@@ -110,10 +110,9 @@ export const ChatInterface: React.FC = () => {
 
       if (result.success) {
         setQuestionText('')
-        // Background job will handle the response via toast notifications
-        // The askQuestionAsync hook already adds the user message and handles the AI response
+        // The askQuestionAsync hook now handles the response directly (no background job)
       } else {
-        console.error('Failed to start question processing:', result.message)
+        console.error('Failed to ask question:', result.message)
       }
     } catch (error) {
       // Error handled by useChat hook
