@@ -45,30 +45,53 @@ class BackgroundJobService {
     return id
   }
 
-  // Start polling for a job
+  // Start polling for a job with exponential backoff
   private startPolling(jobId: string) {
     const job = this.jobs.get(jobId)
     if (!job) return
 
+    let pollInterval = 15000 // Start with 15 seconds
+    const maxInterval = 30000 // Max 30 seconds
+    const backoffMultiplier = 1.2 // Increase by 20% each time
+    const maxDuration = 30 * 60 * 1000 // Max 30 minutes timeout
+
     const poll = async () => {
       try {
+        // Check if exceeded max duration (30 minutes)
+        const elapsed = Date.now() - job.startTime
+        if (elapsed > maxDuration) {
+          this.handleJobError(jobId, 'Job timeout - exceeded 30 minutes maximum duration')
+          return
+        }
+
         const status = await jobsService.getJobStatus(job.jobId)
 
         if (status.status === 'completed') {
           this.handleJobComplete(jobId, status.result)
         } else if (status.status === 'failed') {
           this.handleJobError(jobId, status.errorMessage || 'Job failed')
+        } else {
+          // Still processing - increase interval with exponential backoff
+          pollInterval = Math.min(pollInterval * backoffMultiplier, maxInterval)
+
+          // Schedule next poll
+          const timeout = window.setTimeout(poll, pollInterval)
+          this.pollingIntervals.set(jobId, timeout)
         }
-        // Continue polling if still processing
-      } catch (error) {
+      } catch (error: any) {
         console.error(`Polling error for job ${jobId}:`, error)
-        // Continue polling on network errors
+
+        // Handle rate limiting (429 Too Many Requests)
+        if (error.response?.status === 429) {
+          pollInterval = Math.min(pollInterval * 2, maxInterval)
+          console.warn(`Rate limited for job ${jobId}, backing off to ${pollInterval}ms`)
+        }
+
+        // Continue polling with current interval (don't give up on network errors)
+        const timeout = window.setTimeout(poll, pollInterval)
+        this.pollingIntervals.set(jobId, timeout)
       }
     }
-
-    // Poll every 5 seconds
-    const interval = setInterval(poll, 5000)
-    this.pollingIntervals.set(jobId, interval)
 
     // Initial poll
     poll()
@@ -128,9 +151,9 @@ class BackgroundJobService {
 
   // Clear polling for a job
   private clearPolling(jobId: string) {
-    const interval = this.pollingIntervals.get(jobId)
-    if (interval) {
-      clearInterval(interval)
+    const timeout = this.pollingIntervals.get(jobId)
+    if (timeout) {
+      clearTimeout(timeout)
       this.pollingIntervals.delete(jobId)
     }
   }
@@ -237,7 +260,7 @@ class BackgroundJobService {
 
   // Cleanup on app close
   cleanup() {
-    this.pollingIntervals.forEach((interval) => clearInterval(interval))
+    this.pollingIntervals.forEach((timeout) => clearTimeout(timeout))
     this.pollingIntervals.clear()
   }
 }
