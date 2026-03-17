@@ -29,10 +29,10 @@ export default function LoginPage() {
       if (response.role === 'Admin') {
         navigate('/admin')
       } else if (response.role === 'Analyst') {
-        navigate('/chat')
+        navigate('/analyst')
       } else {
         // Fallback for other roles
-        navigate('/chat')
+        navigate('/analyst')
       }
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } }

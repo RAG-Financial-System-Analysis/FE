@@ -5,8 +5,11 @@ import type {
   ReportDetail,
   UploadReportRequest,
   UploadReportResponse,
+  UploadReportAsyncResponse,
   UpdateVisibilityRequest,
-  GetReportCategoriesResponse
+  GetReportCategoriesResponse,
+  SearchReportsRequest,
+  SearchReportsResponse
 } from '@/types/reports.types'
 
 class ReportsService {
@@ -38,7 +41,9 @@ class ReportsService {
     return response.data
   }
 
-  // Upload Report
+  // Upload Report (Synchronous) - DEPRECATED: WILL TIMEOUT ON API GATEWAY!
+  // ⚠️  WARNING: API Gateway has 30s timeout limit, but this method needs 10+ minutes
+  // ⚠️  USE uploadReportAsync instead for production deployment
   async uploadReport(data: UploadReportRequest): Promise<UploadReportResponse> {
     const formData = new FormData()
     formData.append('file', data.file)
@@ -52,7 +57,26 @@ class ReportsService {
       headers: {
         'Content-Type': 'multipart/form-data'
       },
-      timeout: 600000 // 10 minutes for file upload
+      timeout: 25000 // Reduced to 25s to match API Gateway limit (will still timeout for large files)
+    })
+    return response.data
+  }
+
+  // Upload Report (Asynchronous) - NEW: Replaces uploadReport
+  async uploadReportAsync(data: UploadReportRequest): Promise<UploadReportAsyncResponse> {
+    const formData = new FormData()
+    formData.append('file', data.file)
+    formData.append('companyId', data.companyId)
+    formData.append('categoryId', data.categoryId)
+    formData.append('year', data.year.toString())
+    formData.append('period', data.period)
+    formData.append('visibility', data.visibility)
+
+    const response = await axiosInstance.post('/api/reports/upload-async', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      timeout: 25000 // 25 seconds - safely under API Gateway 30s limit
     })
     return response.data
   }
@@ -81,10 +105,19 @@ class ReportsService {
     return response.data
   }
 
-  // Search Reports (Not developed)
-  async searchReports(query: string, companyId?: string, year?: number, period?: string): Promise<unknown> {
-    console.log('Search reports called with:', { query, companyId, year, period })
-    throw new Error('Tính năng chưa được phát triển')
+  // Search Reports - NEW: Implemented
+  async searchReports(params: SearchReportsRequest = {}): Promise<SearchReportsResponse> {
+    const queryParams = new URLSearchParams()
+
+    if (params.query) queryParams.append('query', params.query)
+    if (params.companyId) queryParams.append('companyId', params.companyId)
+    if (params.year) queryParams.append('year', params.year.toString())
+    if (params.period) queryParams.append('period', params.period)
+    if (params.page) queryParams.append('page', params.page.toString())
+    if (params.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+
+    const response = await axiosInstance.get(`/api/reports/search?${queryParams.toString()}`)
+    return response.data
   }
 
   // Get Report Metrics (Not developed)

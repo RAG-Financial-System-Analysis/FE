@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import analyticsService from '@/services/analyticsService'
+import backgroundJobService from '@/services/backgroundJobService'
 import type {
   AnalyticsType,
   GenerateAnalyticsReportRequest,
@@ -22,6 +23,9 @@ interface UseAnalyticsReturn {
   generateReport: (
     data: GenerateAnalyticsReportRequest
   ) => Promise<{ success: boolean; message: string; reportId?: string }>
+  generateReportAsync: (
+    data: GenerateAnalyticsReportRequest
+  ) => Promise<{ success: boolean; message: string; backgroundJobId?: string }>
   loadAnalyticsReports: (params?: GetAnalyticsReportsRequest) => Promise<{ success: boolean; message: string }>
   loadReportDetail: (reportId: string) => Promise<{ success: boolean; message: string }>
   clearError: () => void
@@ -65,6 +69,52 @@ export const useAnalytics = (): UseAnalyticsReturn => {
     }
   }, [])
 
+  // New async generate method with background processing - RECOMMENDED
+  const generateReportAsync = useCallback(async (data: GenerateAnalyticsReportRequest) => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      // Step 1: Start async processing
+      const asyncResponse = await analyticsService.generateReportAsync(data)
+
+      // Step 2: Start background job (non-blocking)
+      const backgroundJobId = backgroundJobService.startJob({
+        type: 'analytics',
+        jobId: asyncResponse.jobId,
+        title: data.title,
+        onComplete: (result) => {
+          // Reload analytics reports when job completes
+          console.log('Analytics report generated successfully:', result)
+        },
+        onError: (error) => {
+          console.error('Background analytics generation failed:', error)
+          setError('Có lỗi xảy ra khi tạo báo cáo phân tích')
+        }
+      })
+
+      setIsLoading(false)
+
+      return {
+        success: true,
+        message: `Analytics report generation started in background. You'll be notified when it's ready.`,
+        backgroundJobId
+      }
+    } catch (err: unknown) {
+      const errorMessage =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        (err as Error)?.message ||
+        'Failed to start analytics report generation'
+      setError(errorMessage)
+      setIsLoading(false)
+      return {
+        success: false,
+        message: errorMessage
+      }
+    }
+  }, [])
+
+  // Legacy generate method (synchronous) - DEPRECATED
   const generateReport = useCallback(async (data: GenerateAnalyticsReportRequest) => {
     setIsLoading(true)
     setError(null)
@@ -155,7 +205,8 @@ export const useAnalytics = (): UseAnalyticsReturn => {
 
     // Actions
     loadAnalyticsTypes,
-    generateReport,
+    generateReport, // Legacy method
+    generateReportAsync, // New recommended method
     loadAnalyticsReports,
     loadReportDetail,
     clearError,

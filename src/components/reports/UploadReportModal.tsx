@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useReports } from '@/hooks/useReports'
+import backgroundJobService from '@/services/backgroundJobService'
 import { X, Upload, FileText, AlertCircle, CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,7 +17,7 @@ interface UploadReportModalProps {
 }
 
 export const UploadReportModal = ({ isOpen, onClose, companies, categories, onSuccess }: UploadReportModalProps) => {
-  const { uploadReport, isLoading, error } = useReports()
+  const { uploadReportAsync, isLoading, error } = useReports()
 
   const [formData, setFormData] = useState({
     companyId: '',
@@ -28,6 +29,16 @@ export const UploadReportModal = ({ isOpen, onClose, companies, categories, onSu
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [dragActive, setDragActive] = useState(false)
   const [uploadSuccess, setUploadSuccess] = useState(false)
+
+  // Initialize background job service on mount
+  useEffect(() => {
+    backgroundJobService.recoverJobs()
+
+    // Cleanup on unmount
+    return () => {
+      backgroundJobService.cleanup()
+    }
+  }, [])
 
   if (!isOpen) return null
 
@@ -77,7 +88,7 @@ export const UploadReportModal = ({ isOpen, onClose, companies, categories, onSu
       return
     }
 
-    const result = await uploadReport({
+    const result = await uploadReportAsync({
       file: selectedFile,
       companyId: formData.companyId,
       categoryId: formData.categoryId,
@@ -88,6 +99,8 @@ export const UploadReportModal = ({ isOpen, onClose, companies, categories, onSu
 
     if (result.success) {
       setUploadSuccess(true)
+      toast.success('Upload started! You can continue working while we process your file.')
+
       setTimeout(() => {
         onSuccess()
         onClose()
@@ -102,6 +115,8 @@ export const UploadReportModal = ({ isOpen, onClose, companies, categories, onSu
         setSelectedFile(null)
         setUploadSuccess(false)
       }, 2000)
+    } else {
+      toast.error(result.message || 'Có lỗi xảy ra khi upload báo cáo')
     }
   }
 
@@ -306,8 +321,10 @@ export const UploadReportModal = ({ isOpen, onClose, companies, categories, onSu
             <div className='bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3'>
               <CheckCircle className='w-5 h-5 text-green-600 mt-0.5 shrink-0' />
               <div>
-                <h3 className='text-green-800 font-medium mb-1'>Upload thành công!</h3>
-                <p className='text-green-700 text-sm'>Báo cáo đã được tải lên và xử lý thành công.</p>
+                <h3 className='text-green-800 font-medium mb-1'>Upload started!</h3>
+                <p className='text-green-700 text-sm'>
+                  Your file is being processed in the background. You'll be notified when it's complete.
+                </p>
               </div>
             </div>
           )}
@@ -325,7 +342,7 @@ export const UploadReportModal = ({ isOpen, onClose, companies, categories, onSu
               {isLoading ? (
                 <>
                   <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2' />
-                  Đang tải lên...
+                  Starting Upload...
                 </>
               ) : (
                 <>

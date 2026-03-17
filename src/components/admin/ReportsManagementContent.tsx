@@ -15,7 +15,9 @@ import {
   User,
   Upload,
   Globe,
-  Lock
+  Lock,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 import type { Report } from '@/types/reports.types'
 import toast from 'react-hot-toast'
@@ -33,7 +35,7 @@ const ReportsManagementContent = () => {
     loadReportCategories,
     deleteReport,
     downloadReport,
-    uploadReport,
+    uploadReportAsync,
     updateVisibility,
     clearError
   } = useReports()
@@ -42,6 +44,8 @@ const ReportsManagementContent = () => {
 
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'public' | 'private'>('all')
+  const [page, setPage] = useState(1)
+  const [pageSize] = useState(5) // Admin view with 5 items per page
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [selectedReport, setSelectedReport] = useState<Report | null>(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
@@ -67,15 +71,21 @@ const ReportsManagementContent = () => {
   }, [myReports, publicReports])
 
   useEffect(() => {
-    loadMyReports()
-    loadPublicReports()
+    // Load all reports for admin view - no pagination limit
+    loadMyReports({ page: 1, pageSize: 1000 }) // Load all my reports
+    loadPublicReports({ page: 1, pageSize: 1000 }) // Load all public reports
     loadReportCategories()
     loadCompanies()
   }, [loadMyReports, loadPublicReports, loadReportCategories, loadCompanies])
 
+  // Reset page when search or filter changes
+  useEffect(() => {
+    setPage(1)
+  }, [searchTerm, filterStatus])
+
   // Auto refresh function
   const handleAutoRefresh = useCallback(async () => {
-    await Promise.all([loadMyReports(), loadPublicReports()])
+    await Promise.all([loadMyReports({ page: 1, pageSize: 1000 }), loadPublicReports({ page: 1, pageSize: 1000 })])
   }, [loadMyReports, loadPublicReports])
 
   // Auto refresh hook - 45 seconds interval for reports management
@@ -97,6 +107,10 @@ const ReportsManagementContent = () => {
 
     return matchesSearch && matchesFilter
   })
+
+  // Frontend pagination for filtered results
+  const totalPages = Math.max(1, Math.ceil(filteredReports.length / pageSize))
+  const paginatedReports = filteredReports.slice((page - 1) * pageSize, page * pageSize)
 
   const handleDeleteReport = async (reportId: string) => {
     if (deleteConfirm === reportId) {
@@ -124,8 +138,8 @@ const ReportsManagementContent = () => {
     if (result.success) {
       toast.success(`Đã chuyển báo cáo thành ${newVisibility === 'public' ? 'công khai' : 'riêng tư'}`)
       // Reload reports to reflect changes
-      loadMyReports()
-      loadPublicReports()
+      loadMyReports({ page: 1, pageSize: 1000 })
+      loadPublicReports({ page: 1, pageSize: 1000 })
     } else {
       toast.error(result.message || 'Có lỗi xảy ra khi cập nhật visibility')
     }
@@ -139,7 +153,7 @@ const ReportsManagementContent = () => {
 
     setIsUploading(true)
     try {
-      const result = await uploadReport({
+      const result = await uploadReportAsync({
         file: uploadForm.file,
         companyId: uploadForm.companyId,
         categoryId: uploadForm.categoryId,
@@ -160,8 +174,8 @@ const ReportsManagementContent = () => {
           visibility: 'private'
         })
         // Reload reports
-        loadMyReports()
-        loadPublicReports()
+        loadMyReports({ page: 1, pageSize: 1000 })
+        loadPublicReports({ page: 1, pageSize: 1000 })
       } else {
         toast.error(result.message || 'Có lỗi xảy ra khi upload báo cáo')
       }
@@ -344,7 +358,7 @@ const ReportsManagementContent = () => {
 
       {/* Reports Grid */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-        {filteredReports.map((report) => (
+        {paginatedReports.map((report) => (
           <div
             key={report.id}
             className='bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-200'
@@ -448,8 +462,38 @@ const ReportsManagementContent = () => {
         ))}
       </div>
 
+      {/* Pagination */}
+      <div className='flex items-center justify-between bg-white rounded-xl border border-slate-200 px-6 py-4 mt-6'>
+        <div className='text-sm text-slate-600'>
+          Hiển thị {(page - 1) * pageSize + 1} đến {Math.min(page * pageSize, filteredReports.length)} trong tổng số{' '}
+          {filteredReports.length} báo cáo
+          {(searchTerm || filterStatus !== 'all') && ` (lọc từ ${allReports.length} tổng cộng)`}
+        </div>
+        <div className='flex items-center gap-2'>
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className='px-3 py-1 text-sm border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1'
+          >
+            <ChevronLeft className='w-4 h-4' />
+            Trước
+          </button>
+          <span className='text-sm text-slate-700 px-3'>
+            Trang {page} / {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className='px-3 py-1 text-sm border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1'
+          >
+            Sau
+            <ChevronRight className='w-4 h-4' />
+          </button>
+        </div>
+      </div>
+
       {/* Empty State */}
-      {filteredReports.length === 0 && !isLoading && (
+      {paginatedReports.length === 0 && !isLoading && (
         <div className='text-center py-16'>
           <div className='w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6'>
             <FileText className='w-12 h-12 text-slate-400' />

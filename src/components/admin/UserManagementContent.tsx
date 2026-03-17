@@ -1,26 +1,29 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useAdmin } from '@/hooks/useAdmin'
 import { useAutoRefresh } from '@/hooks/useAutoRefresh'
-import type { User } from '@/types/admin.types'
-import { Edit, Trash2, Search, ChevronLeft, ChevronRight, UserPlus, AlertCircle } from 'lucide-react'
+import type { User, UpdateUserRequest } from '@/types/admin.types'
+import { Edit, Trash2, Search, ChevronLeft, ChevronRight, UserPlus, AlertCircle, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import { EditUserModal } from './EditUserModal'
+import { ViewUserModal } from './ViewUserModal'
 import toast from 'react-hot-toast'
 import AutoRefreshIndicator from '@/components/common/AutoRefreshIndicator'
 
 const UserManagementContent = () => {
-  const { users, isLoading, error, totalUsers, loadUsers, deleteUser, clearError } = useAdmin()
+  const { users, isLoading, error, totalUsers, loadUsers, updateUser, deleteUser, clearError } = useAdmin()
 
   const [page, setPage] = useState(1)
-  const [pageSize] = useState(10)
+  const [pageSize] = useState(5)
   const [searchTerm, setSearchTerm] = useState('')
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [userToDelete, setUserToDelete] = useState<{ id: string; name: string } | null>(null)
+  const [viewingUserId, setViewingUserId] = useState<string | null>(null)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
 
   // Load users on component mount and when page changes
   useEffect(() => {
@@ -66,16 +69,36 @@ const UserManagementContent = () => {
     setIsEditModalOpen(true)
   }
 
+  const handleViewUser = (userId: string) => {
+    setViewingUserId(userId)
+    setIsViewModalOpen(true)
+  }
+
+  const handleCloseViewModal = () => {
+    setIsViewModalOpen(false)
+    setViewingUserId(null)
+  }
+
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false)
     setEditingUser(null)
   }
 
-  const handleSaveUser = async () => {
-    // API Update User chưa được phát triển - fix cứng
-    return {
-      success: false,
-      message: 'Tính năng chưa được phát triển'
+  const handleSaveUser = async (userId: string, data: UpdateUserRequest) => {
+    try {
+      const result = await updateUser(userId, data)
+
+      if (result.success) {
+        toast.success(result.message || 'Cập nhật người dùng thành công!')
+        // Reload users to reflect changes
+        await loadUsers({ page, pageSize })
+        return { success: true, message: result.message }
+      } else {
+        return { success: false, message: result.message }
+      }
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Có lỗi xảy ra khi cập nhật người dùng'
+      return { success: false, message: errorMessage }
     }
   }
 
@@ -86,7 +109,7 @@ const UserManagementContent = () => {
       user.role.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const totalPages = Math.ceil(totalUsers / pageSize)
+  const totalPages = Math.max(1, Math.ceil(totalUsers / pageSize))
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Chưa đăng nhập'
@@ -301,8 +324,18 @@ const UserManagementContent = () => {
                         <Button
                           variant='ghost'
                           size='sm'
+                          onClick={() => handleViewUser(user.id)}
+                          className='text-slate-600 hover:text-slate-700 hover:bg-slate-50'
+                          title='Xem chi tiết'
+                        >
+                          <Eye className='w-4 h-4' />
+                        </Button>
+                        <Button
+                          variant='ghost'
+                          size='sm'
                           onClick={() => handleEditUser(user)}
                           className='text-blue-600 hover:text-blue-700 hover:bg-blue-50'
+                          title='Chỉnh sửa'
                         >
                           <Edit className='w-4 h-4' />
                         </Button>
@@ -312,6 +345,7 @@ const UserManagementContent = () => {
                           onClick={() => handleDeleteUser(user.id, user.fullName)}
                           disabled={deletingUserId === user.id}
                           className='text-red-600 hover:text-red-700 hover:bg-red-50 disabled:opacity-50'
+                          title='Xóa'
                         >
                           {deletingUserId === user.id ? (
                             <div className='w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin' />
@@ -329,38 +363,39 @@ const UserManagementContent = () => {
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className='px-6 py-4 border-t border-slate-200 flex items-center justify-between bg-slate-50'>
-            <div className='text-sm text-slate-600'>
-              Hiển thị {(page - 1) * pageSize + 1} đến {Math.min(page * pageSize, totalUsers)} trong tổng số{' '}
-              {totalUsers} analyst
-            </div>
-            <div className='flex items-center gap-2'>
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className='px-3'
-              >
-                <ChevronLeft className='w-4 h-4' />
-              </Button>
-              <span className='text-sm text-slate-700 px-3'>
-                Trang {page} / {totalPages}
-              </span>
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className='px-3'
-              >
-                <ChevronRight className='w-4 h-4' />
-              </Button>
-            </div>
+        <div className='px-6 py-4 border-t border-slate-200 flex items-center justify-between bg-slate-50'>
+          <div className='text-sm text-slate-600'>
+            Hiển thị {(page - 1) * pageSize + 1} đến {Math.min(page * pageSize, totalUsers)} trong tổng số {totalUsers}{' '}
+            analyst
           </div>
-        )}
+          <div className='flex items-center gap-2'>
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className='px-3'
+            >
+              <ChevronLeft className='w-4 h-4' />
+            </Button>
+            <span className='text-sm text-slate-700 px-3'>
+              Trang {page} / {totalPages}
+            </span>
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className='px-3'
+            >
+              <ChevronRight className='w-4 h-4' />
+            </Button>
+          </div>
+        </div>
       </div>
+
+      {/* View User Modal */}
+      <ViewUserModal userId={viewingUserId} isOpen={isViewModalOpen} onClose={handleCloseViewModal} />
 
       {/* Edit User Modal */}
       <EditUserModal

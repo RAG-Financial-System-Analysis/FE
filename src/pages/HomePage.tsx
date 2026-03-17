@@ -149,7 +149,7 @@ function HomePage() {
                   <span className='text-sm font-medium text-[#0e141b] dark:text-white'>{fullName || 'Analyst'}</span>
                 </div>
                 <button
-                  onClick={() => navigate(role === 'Admin' ? '/admin' : '/chat')}
+                  onClick={() => navigate(role === 'Admin' ? '/admin' : '/analyst')}
                   className='flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#1773cf] text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#1773cf]/90 transition-colors'
                 >
                   <span className='truncate'>{role === 'Admin' ? 'Admin Panel' : 'AI Chat'}</span>

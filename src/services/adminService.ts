@@ -37,9 +37,10 @@ class AdminService {
   }
 
   async updateUser(userId: string, data: UpdateUserRequest): Promise<{ message: string }> {
-    // API 3 - Not development
-    console.log('Update user called with:', { userId, data })
-    throw new Error('Tính năng chưa được phát triển')
+    const response = await axiosInstance.put(`/api/admin/users/${userId}`, data)
+    return {
+      message: response.data.message || 'User updated successfully'
+    }
   }
 
   async deleteUser(userId: string): Promise<{ message: string }> {
@@ -157,6 +158,34 @@ class AdminService {
     const response = await axiosInstance.delete(`/api/admin/analytics-types/${typeId}`)
     return {
       message: response.data.message || 'Analytics type deleted successfully'
+    }
+  }
+
+  // S3 Test Methods
+  async testS3Upload(file: File): Promise<{ success: boolean; message: string; data?: any }> {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await axiosInstance.post('/api/test/s3-upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+
+    return {
+      success: response.data.success || false,
+      message: response.data.message || 'S3 upload test completed',
+      data: response.data
+    }
+  }
+
+  async getS3Info(): Promise<{ success: boolean; message: string; data?: any }> {
+    const response = await axiosInstance.get('/api/test/s3-info')
+
+    return {
+      success: true, // Assume success if no error thrown
+      message: response.data.message || 'S3 info retrieved',
+      data: response.data
     }
   }
 }

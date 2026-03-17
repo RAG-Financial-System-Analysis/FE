@@ -1,10 +1,24 @@
 import { useEffect, useState } from 'react'
 import { useAdmin } from '@/hooks/useAdmin'
 import type { AnalyticsType, CreateAnalyticsTypeRequest } from '@/types/admin.types'
-import { Edit, Trash2, Search, Plus, AlertCircle, BarChart3, Code, Calendar, Hash } from 'lucide-react'
+import {
+  Edit,
+  Trash2,
+  Search,
+  Plus,
+  AlertCircle,
+  BarChart3,
+  Code,
+  Calendar,
+  Hash,
+  Eye,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import ConfirmModal from '@/components/ui/ConfirmModal'
+import { ViewAnalyticsTypeModal } from './ViewAnalyticsTypeModal'
 import toast from 'react-hot-toast'
 
 const AnalyticsTypesContent = () => {
@@ -21,12 +35,16 @@ const AnalyticsTypesContent = () => {
   } = useAdmin()
 
   const [searchTerm, setSearchTerm] = useState('')
+  const [page, setPage] = useState(1)
+  const [pageSize] = useState(6) // 2x3 grid
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingType, setEditingType] = useState<AnalyticsType | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [deletingTypeId, setDeletingTypeId] = useState<string | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [typeToDelete, setTypeToDelete] = useState<{ id: string; name: string } | null>(null)
+  const [viewingType, setViewingType] = useState<AnalyticsType | null>(null)
+  const [showViewModal, setShowViewModal] = useState(false)
 
   // Form states
   const [formData, setFormData] = useState<CreateAnalyticsTypeRequest>({
@@ -45,6 +63,15 @@ const AnalyticsTypesContent = () => {
       type.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (type.description && type.description.toLowerCase().includes(searchTerm.toLowerCase()))
   )
+
+  // Frontend pagination
+  const totalPages = Math.max(1, Math.ceil(filteredTypes.length / pageSize))
+  const paginatedTypes = filteredTypes.slice((page - 1) * pageSize, page * pageSize)
+
+  // Reset page when search changes
+  useEffect(() => {
+    setPage(1)
+  }, [searchTerm])
 
   const handleCreateType = async () => {
     if (!formData.code.trim() || !formData.name.trim()) {
@@ -70,6 +97,11 @@ const AnalyticsTypesContent = () => {
       description: type.description || ''
     })
     setShowEditModal(true)
+  }
+
+  const handleViewType = (type: AnalyticsType) => {
+    setViewingType(type)
+    setShowViewModal(true)
   }
 
   const handleUpdateType = async () => {
@@ -182,7 +214,8 @@ const AnalyticsTypesContent = () => {
             />
           </div>
           <div className='text-sm text-slate-600 ml-4'>
-            Tổng cộng: <span className='font-semibold text-slate-900'>{totalAnalyticsTypes}</span> loại phân tích
+            Hiển thị: <span className='font-semibold text-slate-900'>{paginatedTypes.length}</span> /
+            <span className='font-semibold text-slate-900'>{filteredTypes.length}</span> loại phân tích
           </div>
         </div>
 
@@ -237,7 +270,7 @@ const AnalyticsTypesContent = () => {
 
       {/* Analytics Types Grid */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8'>
-        {filteredTypes.length === 0 ? (
+        {paginatedTypes.length === 0 ? (
           <div className='col-span-full flex items-center justify-center py-12'>
             <div className='text-center text-slate-400'>
               <BarChart3 className='w-12 h-12 mx-auto mb-4 opacity-50' />
@@ -248,7 +281,7 @@ const AnalyticsTypesContent = () => {
             </div>
           </div>
         ) : (
-          filteredTypes.map((type) => (
+          paginatedTypes.map((type) => (
             <div
               key={type.id}
               className='bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow'
@@ -269,8 +302,18 @@ const AnalyticsTypesContent = () => {
                     <Button
                       variant='ghost'
                       size='sm'
+                      onClick={() => handleViewType(type)}
+                      className='text-slate-600 hover:text-slate-700 hover:bg-slate-50'
+                      title='Xem chi tiết'
+                    >
+                      <Eye className='w-4 h-4' />
+                    </Button>
+                    <Button
+                      variant='ghost'
+                      size='sm'
                       onClick={() => handleEditType(type)}
                       className='text-blue-600 hover:text-blue-700 hover:bg-blue-50'
+                      title='Chỉnh sửa'
                     >
                       <Edit className='w-4 h-4' />
                     </Button>
@@ -280,6 +323,7 @@ const AnalyticsTypesContent = () => {
                       onClick={() => handleDeleteType(type.id, type.name)}
                       disabled={deletingTypeId === type.id}
                       className='text-red-600 hover:text-red-700 hover:bg-red-50 disabled:opacity-50'
+                      title='Xóa'
                     >
                       {deletingTypeId === type.id ? (
                         <div className='w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin' />
@@ -301,6 +345,48 @@ const AnalyticsTypesContent = () => {
           ))
         )}
       </div>
+
+      {/* Pagination */}
+      <div className='flex items-center justify-between bg-white rounded-xl border border-slate-200 px-6 py-4 mb-8'>
+        <div className='text-sm text-slate-600'>
+          Hiển thị {(page - 1) * pageSize + 1} đến {Math.min(page * pageSize, filteredTypes.length)} trong tổng số{' '}
+          {filteredTypes.length} loại phân tích
+          {searchTerm && ` (lọc từ ${totalAnalyticsTypes} tổng cộng)`}
+        </div>
+        <div className='flex items-center gap-2'>
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className='px-3'
+          >
+            <ChevronLeft className='w-4 h-4' />
+          </Button>
+          <span className='text-sm text-slate-700 px-3'>
+            Trang {page} / {totalPages}
+          </span>
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className='px-3'
+          >
+            <ChevronRight className='w-4 h-4' />
+          </Button>
+        </div>
+      </div>
+
+      {/* View Modal */}
+      <ViewAnalyticsTypeModal
+        analyticsType={viewingType}
+        isOpen={showViewModal}
+        onClose={() => {
+          setShowViewModal(false)
+          setViewingType(null)
+        }}
+      />
 
       {/* Create Modal */}
       {showCreateModal && (

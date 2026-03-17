@@ -8,6 +8,12 @@ import type {
   GetChatSessionsResponse
 } from '@/types/chat.types'
 
+interface AskQuestionAsyncResponse {
+  jobId: string
+  status: string
+  message: string
+}
+
 class ChatService {
   // Create new chat session
   async createSession(data: CreateChatSessionRequest): Promise<CreateChatSessionResponse> {
@@ -15,9 +21,15 @@ class ChatService {
     return response.data
   }
 
-  // Ask question in chat session
+  // Ask question in chat session (synchronous) - DEPRECATED
   async askQuestion(data: AskQuestionRequest): Promise<AskQuestionResponse> {
     const response = await axiosInstance.post('/api/chat/ask', data)
+    return response.data
+  }
+
+  // Ask question in chat session (asynchronous) - RECOMMENDED
+  async askQuestionAsync(data: AskQuestionRequest): Promise<AskQuestionAsyncResponse> {
+    const response = await axiosInstance.post('/api/chat/ask-async', data)
     return response.data
   }
 

@@ -1,12 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { Navigate } from 'react-router-dom'
-import { BarChart3, MessageSquare, FileText, User, LogOut, Menu, X, TrendingUp } from 'lucide-react'
+import { Navigate, useSearchParams } from 'react-router-dom'
+import { BarChart3, MessageSquare, FileText, User, LogOut, Menu, X, TrendingUp, FileBarChart } from 'lucide-react'
 import { ChatInterface } from '@/components/chat/ChatInterface'
 import AnalyticsReportsViewer from '@/components/analytics/AnalyticsReportsViewer'
 import CreateAnalyticsReport from '@/components/analytics/CreateAnalyticsReport'
+import ReportsContent from '@/components/reports/ReportsContent'
+import ProfileContent from '@/components/profile/ProfileContent'
 
-type AnalystView = 'chat' | 'reports' | 'analytics'
+type AnalystView = 'chat' | 'reports' | 'analytics' | 'manage-reports' | 'profile'
 
 interface AnalystLayoutProps {
   defaultView?: AnalystView
@@ -14,8 +16,17 @@ interface AnalystLayoutProps {
 
 const AnalystLayout: React.FC<AnalystLayoutProps> = ({ defaultView = 'chat' }) => {
   const { isAuthenticated, hasRole, fullName, logout } = useAuth()
+  const [searchParams] = useSearchParams()
   const [currentView, setCurrentView] = useState<AnalystView>(defaultView)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  // Handle URL params for tab switching
+  useEffect(() => {
+    const tabParam = searchParams.get('tab') as AnalystView
+    if (tabParam && ['chat', 'reports', 'analytics', 'manage-reports', 'profile'].includes(tabParam)) {
+      setCurrentView(tabParam)
+    }
+  }, [searchParams])
 
   // Check if analyst is authenticated and has Analyst or Admin role
   if (!isAuthenticated) {
@@ -51,54 +62,53 @@ const AnalystLayout: React.FC<AnalystLayoutProps> = ({ defaultView = 'chat' }) =
       id: 'chat' as AnalystView,
       name: 'AI Assistant',
       icon: MessageSquare,
-      description: 'Trợ lý AI'
-    },
-    {
-      id: 'analytics' as AnalystView,
-      name: 'View Analytics',
-      icon: TrendingUp,
-      description: 'Xem báo cáo phân tích'
+      description: 'AI Assistant'
     },
     {
       id: 'reports' as AnalystView,
       name: 'Create Analytics',
       icon: FileText,
-      description: 'Tạo báo cáo phân tích'
+      description: 'Create analytics reports'
+    },
+    {
+      id: 'analytics' as AnalystView,
+      name: 'View Analytics',
+      icon: TrendingUp,
+      description: 'View analytics reports'
+    },
+    {
+      id: 'manage-reports' as AnalystView,
+      name: 'Reports',
+      icon: FileBarChart,
+      description: 'Manage financial reports'
+    },
+    {
+      id: 'profile' as AnalystView,
+      name: 'Profile',
+      icon: User,
+      description: 'User profile'
     }
   ]
 
   const renderContent = () => {
     switch (currentView) {
       case 'chat':
-        return (
-          <div className='h-full'>
-            <ChatInterface />
-          </div>
-        )
-      case 'analytics':
-        return (
-          <div className='h-full overflow-auto'>
-            <AnalyticsReportsViewer />
-          </div>
-        )
+        return <ChatInterface />
       case 'reports':
-        return (
-          <div className='h-full overflow-auto'>
-            <CreateAnalyticsReport />
-          </div>
-        )
+        return <CreateAnalyticsReport />
+      case 'analytics':
+        return <AnalyticsReportsViewer />
+      case 'manage-reports':
+        return <ReportsContent />
+      case 'profile':
+        return <ProfileContent />
       default:
-        // Default to chat
-        return (
-          <div className='h-full'>
-            <ChatInterface />
-          </div>
-        )
+        return <ChatInterface />
     }
   }
 
   return (
-    <div className='flex min-h-screen bg-slate-50'>
+    <div className='flex h-screen bg-slate-50 overflow-hidden'>
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
@@ -165,7 +175,7 @@ const AnalystLayout: React.FC<AnalystLayoutProps> = ({ defaultView = 'chat' }) =
             className='w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors'
           >
             <LogOut className='w-4 h-4' />
-            Đăng xuất
+            Sign Out
           </button>
         </div>
       </div>
@@ -189,7 +199,7 @@ const AnalystLayout: React.FC<AnalystLayoutProps> = ({ defaultView = 'chat' }) =
         </div>
 
         {/* Content */}
-        <main className='flex-1 overflow-auto'>{renderContent()}</main>
+        <main className='flex-1 flex flex-col min-h-0 overflow-hidden'>{renderContent()}</main>
       </div>
     </div>
   )

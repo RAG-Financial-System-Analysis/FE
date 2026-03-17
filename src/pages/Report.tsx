@@ -129,7 +129,7 @@ const ReportPage = () => {
 
     setUploading(true)
     try {
-      await reportsService.uploadReport({
+      await reportsService.uploadReportAsync({
         file: file,
         companyId: selectedCompany,
         categoryId: selectedCategory,

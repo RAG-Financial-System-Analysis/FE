@@ -4,52 +4,20 @@ import { useAuth } from '@/context/AuthContext'
 import { cn } from '@/lib/utils'
 
 interface SidebarProps {
-  onViewChange?: (view: 'chat' | 'analytics') => void
-  currentView?: 'chat' | 'analytics'
+  // No props needed for simple navigation
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onViewChange, currentView }) => {
+const Sidebar: React.FC<SidebarProps> = () => {
   const { logout, user, hasRole } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
   const handleItemClick = (item: any) => {
-    // If clicking Create Analytics
-    if (item.viewType === 'analytics') {
-      if (location.pathname === '/chat') {
-        // Already on chat page, just switch view
-        onViewChange?.('analytics')
-        // Update URL to reflect the view change
-        window.history.replaceState({}, '', '/chat?view=analytics')
-      } else {
-        // Navigate to chat page with analytics view
-        navigate('/chat?view=analytics')
-      }
-    }
-    // If clicking AI Chat
-    else if (item.path === '/chat' && !item.viewType) {
-      if (location.pathname === '/chat') {
-        // Already on chat page, just switch to chat view
-        onViewChange?.('chat')
-        // Update URL to remove view parameter
-        window.history.replaceState({}, '', '/chat')
-      } else {
-        // Navigate to chat page
-        navigate('/chat')
-      }
-    }
-    // Other items - navigate normally
-    else {
-      navigate(item.path)
-    }
+    // Navigate normally for all items
+    navigate(item.path)
   }
 
   const isItemActive = (item: any) => {
-    if (location.pathname === '/chat') {
-      if (item.path === '/chat' && currentView === 'chat') return true
-      if (item.viewType === 'analytics' && currentView === 'analytics') return true
-      return false
-    }
     return location.pathname === item.path
   }
 
@@ -79,14 +47,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onViewChange, currentView }) => {
       icon: <FileBarChart size={20} />,
       path: '/report'
     },
-    // Create Analytics - only for Analyst and Admin
+    // Analytics feature - only for Analyst and Admin
     ...(hasRole(['Analyst', 'Admin'])
       ? [
           {
-            label: 'Create Analytics',
+            label: 'Analytics',
             icon: <BarChart3 size={20} />,
-            path: '/chat',
-            viewType: 'analytics'
+            path: '/analyst'
           }
         ]
       : [])
@@ -134,7 +101,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onViewChange, currentView }) => {
             const isActive = isItemActive(item)
             return (
               <button
-                key={`${item.path}-${item.viewType || 'default'}`}
+                key={item.path}
                 onClick={() => handleItemClick(item)}
                 className={cn(
                   'flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all font-medium text-sm',

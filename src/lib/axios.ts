@@ -6,6 +6,7 @@ const API_KEY = import.meta.env.VITE_API_KEY
 // Create axios instance
 const axiosInstance = axios.create({
   baseURL: API_URL,
+  timeout: 20000, // 20 seconds default timeout - safe for API Gateway
   headers: {
     'Content-Type': 'application/json'
   }

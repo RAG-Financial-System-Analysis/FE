@@ -8,7 +8,7 @@ const AuditLogsContent = () => {
   const { auditLogs, isLoading, error, totalLogs, clearError, setError } = useAdmin()
 
   const [page, setPage] = useState(1)
-  const [pageSize] = useState(20)
+  const [pageSize] = useState(5)
   const [searchTerm, setSearchTerm] = useState('')
   const [actionFilter, setActionFilter] = useState('')
 
@@ -24,7 +24,7 @@ const AuditLogsContent = () => {
       log.details.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const totalPages = Math.ceil(totalLogs / pageSize)
+  const totalPages = Math.max(1, Math.ceil(totalLogs / pageSize))
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('vi-VN', {
@@ -206,37 +206,35 @@ const AuditLogsContent = () => {
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className='px-6 py-4 border-t border-slate-200 flex items-center justify-between bg-slate-50'>
-            <div className='text-sm text-slate-600'>
-              Hiển thị {(page - 1) * pageSize + 1} đến {Math.min(page * pageSize, totalLogs)} trong tổng số {totalLogs}{' '}
-              hoạt động
-            </div>
-            <div className='flex items-center gap-2'>
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className='px-3'
-              >
-                <ChevronLeft className='w-4 h-4' />
-              </Button>
-              <span className='text-sm text-slate-700 px-3'>
-                Trang {page} / {totalPages}
-              </span>
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className='px-3'
-              >
-                <ChevronRight className='w-4 h-4' />
-              </Button>
-            </div>
+        <div className='px-6 py-4 border-t border-slate-200 flex items-center justify-between bg-slate-50'>
+          <div className='text-sm text-slate-600'>
+            Hiển thị {(page - 1) * pageSize + 1} đến {Math.min(page * pageSize, totalLogs)} trong tổng số {totalLogs}{' '}
+            hoạt động
           </div>
-        )}
+          <div className='flex items-center gap-2'>
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className='px-3'
+            >
+              <ChevronLeft className='w-4 h-4' />
+            </Button>
+            <span className='text-sm text-slate-700 px-3'>
+              Trang {page} / {totalPages}
+            </span>
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className='px-3'
+            >
+              <ChevronRight className='w-4 h-4' />
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   )

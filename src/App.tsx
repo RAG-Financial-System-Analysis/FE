@@ -1,10 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import PublicRoute from './components/auth/PublicRoute'
 import { Loader2 } from 'lucide-react'
 import { Toaster } from 'react-hot-toast'
+import backgroundJobService from './services/backgroundJobService'
 import './index.css'
 import './App.css'
 
@@ -27,6 +28,16 @@ const PageLoader = () => (
 )
 
 function App() {
+  // Initialize background job recovery on app startup
+  useEffect(() => {
+    backgroundJobService.recoverJobs()
+
+    // Cleanup on app close
+    return () => {
+      backgroundJobService.cleanup()
+    }
+  }, [])
+
   return (
     <Router>
       <AuthProvider>

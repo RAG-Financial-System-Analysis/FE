@@ -24,8 +24,8 @@ const PublicRoute = ({ children }: PublicRouteProps) => {
 
   // If user is authenticated, redirect based on role
   if (isAuthenticated) {
-    // Admin goes to admin panel, Analyst goes to chat
-    return <Navigate to={role === 'Admin' ? '/admin' : '/chat'} replace />
+    // Admin goes to admin panel, Analyst goes to analyst
+    return <Navigate to={role === 'Admin' ? '/admin' : '/analyst'} replace />
   }
 
   // User is not authenticated, show the public page (login/signup)

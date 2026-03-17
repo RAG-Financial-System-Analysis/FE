@@ -13,6 +13,7 @@ export interface ChatMessage {
   type: 'user' | 'assistant'
   content: string
   createdAt: string
+  isProcessing?: boolean // Flag to identify processing messages
 }
 
 export interface ApiChatMessage {

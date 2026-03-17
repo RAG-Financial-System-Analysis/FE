@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useCompanies } from '@/hooks/useCompanies'
-import { Building2, Plus, Search, Edit, Trash2, AlertCircle } from 'lucide-react'
+import { Building2, Plus, Search, Edit, Trash2, AlertCircle, Eye, ChevronLeft, ChevronRight } from 'lucide-react'
 import toast from 'react-hot-toast'
 import type { Company, CreateCompanyRequest, UpdateCompanyRequest } from '@/types/companies.types'
+import { ViewCompanyModal } from './ViewCompanyModal'
 
 interface CompanyModalProps {
   isOpen: boolean
@@ -146,22 +147,37 @@ const CompanyModal = ({ isOpen, onClose, company, onSave }: CompanyModalProps) =
 }
 
 const CompaniesContent = () => {
-  const { companies, isLoading, error, loadCompanies, createCompany, updateCompany, deleteCompany, clearError } =
-    useCompanies()
+  const {
+    companies,
+    isLoading,
+    error,
+    totalCompanies,
+    loadCompanies,
+    createCompany,
+    updateCompany,
+    deleteCompany,
+    clearError
+  } = useCompanies()
   const [searchTerm, setSearchTerm] = useState('')
+  const [page, setPage] = useState(1)
+  const [pageSize] = useState(5)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [viewingCompanyId, setViewingCompanyId] = useState<string | null>(null)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
 
   useEffect(() => {
-    loadCompanies()
-  }, [loadCompanies])
+    loadCompanies({ page, pageSize })
+  }, [loadCompanies, page, pageSize])
 
   const filteredCompanies = companies.filter(
     (company) =>
       company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       company.industry?.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  const totalPages = Math.max(1, Math.ceil(totalCompanies / pageSize))
 
   const handleCreateCompany = () => {
     setSelectedCompany(null)
@@ -173,6 +189,16 @@ const CompaniesContent = () => {
     setIsModalOpen(true)
   }
 
+  const handleViewCompany = (companyId: string) => {
+    setViewingCompanyId(companyId)
+    setIsViewModalOpen(true)
+  }
+
+  const handleCloseViewModal = () => {
+    setIsViewModalOpen(false)
+    setViewingCompanyId(null)
+  }
+
   const handleSaveCompany = async (data: CreateCompanyRequest | UpdateCompanyRequest) => {
     try {
       if (selectedCompany) {
@@ -182,7 +208,7 @@ const CompaniesContent = () => {
         await createCompany(data)
         toast.success('Tạo công ty mới thành công!')
       }
-      await loadCompanies()
+      await loadCompanies({ page, pageSize })
     } catch (error: unknown) {
       const errorMessage =
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Có lỗi xảy ra'
@@ -220,19 +246,21 @@ const CompaniesContent = () => {
   }
 
   return (
-    <div className='p-8'>
-      <div className='flex items-center justify-between mb-8'>
-        <div>
-          <h1 className='text-3xl font-bold text-slate-900 mb-2'>Quản Lý Công Ty</h1>
-          <p className='text-slate-600'>Quản lý thông tin các công ty trong hệ thống</p>
+    <div className='p-8 max-w-7xl mx-auto'>
+      <div className='mb-8'>
+        <div className='flex items-center justify-between'>
+          <div>
+            <h1 className='text-3xl font-bold text-slate-900 mb-2'>Quản Lý Công Ty</h1>
+            <p className='text-slate-600'>Quản lý thông tin các công ty trong hệ thống</p>
+          </div>
+          <button
+            onClick={handleCreateCompany}
+            className='flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700'
+          >
+            <Plus className='w-4 h-4' />
+            Thêm Công Ty
+          </button>
         </div>
-        <button
-          onClick={handleCreateCompany}
-          className='flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700'
-        >
-          <Plus className='w-4 h-4' />
-          Thêm Công Ty
-        </button>
       </div>
 
       {/* Error Alert */}
@@ -250,16 +278,62 @@ const CompaniesContent = () => {
       )}
 
       {/* Search */}
-      <div className='mb-6'>
-        <div className='relative'>
-          <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4' />
-          <input
-            type='text'
-            placeholder='Tìm kiếm công ty...'
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className='w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-          />
+      <div className='mb-6 bg-white rounded-xl p-6 border border-slate-200 shadow-sm'>
+        <div className='flex items-center justify-between mb-4'>
+          <div className='relative flex-1 min-w-80'>
+            <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4' />
+            <input
+              type='text'
+              placeholder='Tìm kiếm công ty...'
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className='w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+            />
+          </div>
+          <div className='text-sm text-slate-600 ml-4'>
+            Tổng cộng: <span className='font-semibold text-slate-900'>{totalCompanies}</span> công ty
+          </div>
+        </div>
+
+        {/* Quick Stats */}
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+          <div className='bg-linear-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200'>
+            <div className='flex items-center gap-3'>
+              <div className='w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center'>
+                <Building2 className='w-5 h-5 text-blue-600' />
+              </div>
+              <div>
+                <p className='text-sm text-blue-600 font-medium'>Tổng Công Ty</p>
+                <p className='text-2xl font-bold text-blue-900'>{totalCompanies}</p>
+              </div>
+            </div>
+          </div>
+          <div className='bg-linear-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200'>
+            <div className='flex items-center gap-3'>
+              <div className='w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center'>
+                <div className='w-3 h-3 bg-green-500 rounded-full'></div>
+              </div>
+              <div>
+                <p className='text-sm text-green-600 font-medium'>Có Website</p>
+                <p className='text-2xl font-bold text-green-900'>
+                  {companies.filter((c) => c.website && c.website.trim()).length}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className='bg-linear-to-r from-purple-50 to-violet-50 rounded-lg p-4 border border-purple-200'>
+            <div className='flex items-center gap-3'>
+              <div className='w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center'>
+                <div className='w-5 h-5 text-purple-600'>🏢</div>
+              </div>
+              <div>
+                <p className='text-sm text-purple-600 font-medium'>Có Ngành Nghề</p>
+                <p className='text-2xl font-bold text-purple-900'>
+                  {companies.filter((c) => c.industry && c.industry.trim()).length}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -279,6 +353,13 @@ const CompaniesContent = () => {
                 </div>
               </div>
               <div className='flex items-center gap-1'>
+                <button
+                  onClick={() => handleViewCompany(company.id)}
+                  className='p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded'
+                  title='Xem chi tiết'
+                >
+                  <Eye className='w-4 h-4' />
+                </button>
                 <button
                   onClick={() => handleEditCompany(company)}
                   className='p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded'
@@ -349,6 +430,38 @@ const CompaniesContent = () => {
           )}
         </div>
       )}
+
+      {/* Pagination */}
+      <div className='flex items-center justify-between bg-white rounded-xl border border-slate-200 px-6 py-4 mt-6'>
+        <div className='text-sm text-slate-600'>
+          Hiển thị {(page - 1) * pageSize + 1} đến {Math.min(page * pageSize, totalCompanies)} trong tổng số{' '}
+          {totalCompanies} công ty
+        </div>
+        <div className='flex items-center gap-2'>
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className='px-3 py-1 text-sm border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1'
+          >
+            <ChevronLeft className='w-4 h-4' />
+            Trước
+          </button>
+          <span className='text-sm text-slate-700 px-3'>
+            Trang {page} / {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className='px-3 py-1 text-sm border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1'
+          >
+            Sau
+            <ChevronRight className='w-4 h-4' />
+          </button>
+        </div>
+      </div>
+
+      {/* View Company Modal */}
+      <ViewCompanyModal companyId={viewingCompanyId} isOpen={isViewModalOpen} onClose={handleCloseViewModal} />
 
       {/* Company Modal */}
       <CompanyModal

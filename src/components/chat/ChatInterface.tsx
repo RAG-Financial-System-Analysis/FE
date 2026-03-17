@@ -1,21 +1,21 @@
 import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { useChat } from '@/hooks/useChat'
-import { useAnalytics } from '@/hooks/useAnalytics'
-import { useReports } from '@/hooks/useReports'
 import { CreateSessionModal } from './CreateSessionModal'
-import { BarChart3, FileText } from 'lucide-react'
-import toast from 'react-hot-toast'
 import type { ChatSession } from '@/types/chat.types'
-import type { Report } from '@/types/reports.types'
 
 export const ChatInterface: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [questionText, setQuestionText] = useState('')
   const [isAsking, setIsAsking] = useState(false)
   const [searchText, setSearchText] = useState('')
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false)
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const {
     currentSession,
@@ -24,7 +24,7 @@ export const ChatInterface: React.FC = () => {
     isLoading,
     error,
     loadingAnswers,
-    askQuestion,
+    askQuestionAsync,
     loadChatHistory,
     loadAnswerForQuestion,
     loadSessions,
@@ -32,27 +32,55 @@ export const ChatInterface: React.FC = () => {
     clearError
   } = useChat()
 
-  const { generateReport } = useAnalytics()
-  const { myReports, publicReports, loadMyReports, loadPublicReports } = useReports()
-
-  const [showGenerateModal, setShowGenerateModal] = useState(false)
-  const [selectedReport, setSelectedReport] = useState<Report | null>(null)
-  const [reportTitle, setReportTitle] = useState('')
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [reportType, setReportType] = useState<'my' | 'public'>('my')
-
   // Load sessions on component mount
   useEffect(() => {
     loadSessions()
   }, [loadSessions])
 
-  // Auto scroll to bottom when new messages arrive
+  // Auto scroll to bottom only when user sends a new message (not when loading history)
   useEffect(() => {
+    if (shouldAutoScroll && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
+      setShouldAutoScroll(false)
+    }
+  }, [shouldAutoScroll, messages])
+
+  // Handle scroll to show/hide scroll to bottom button
+  const handleScroll = () => {
+    if (messagesContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100
+      setShowScrollToBottom(!isNearBottom && messages.length > 0)
+    }
+  }
+
+  // Scroll to bottom function
+  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }
+
+  // Auto scroll when AI responds (but not when loading history)
+  useEffect(() => {
+    if (messages.length > 0 && !isLoading) {
+      const lastMessage = messages[messages.length - 1]
+      // Only auto scroll if the last message is from AI and user was near bottom
+      if (lastMessage && lastMessage.type === 'assistant' && !showScrollToBottom) {
+        setShouldAutoScroll(true)
+      }
+    }
+  }, [messages, isLoading, showScrollToBottom])
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 192)}px`
+    }
+  }, [questionText])
 
   const handleSessionSelect = async (session: ChatSession) => {
     setCurrentSession(session)
+    setShouldAutoScroll(false) // Don't auto scroll when loading history
     await loadChatHistory(session.id)
   }
 
@@ -62,6 +90,7 @@ export const ChatInterface: React.FC = () => {
     const newSession = sessions.find((s) => s.id === sessionId)
     if (newSession) {
       setCurrentSession(newSession)
+      setShouldAutoScroll(false) // Don't auto scroll for new empty session
       await loadChatHistory(sessionId)
     }
   }
@@ -71,13 +100,21 @@ export const ChatInterface: React.FC = () => {
     if (!currentSession || !questionText.trim()) return
 
     setIsAsking(true)
+    setShouldAutoScroll(true) // Enable auto scroll for new user message
 
     try {
-      await askQuestion({
+      const result = await askQuestionAsync({
         sessionId: currentSession.id,
         questionText: questionText.trim()
       })
-      setQuestionText('')
+
+      if (result.success) {
+        setQuestionText('')
+        // Background job will handle the response via toast notifications
+        // The askQuestionAsync hook already adds the user message and handles the AI response
+      } else {
+        console.error('Failed to start question processing:', result.message)
+      }
     } catch (error) {
       // Error handled by useChat hook
       console.error('Error asking question:', error)
@@ -93,41 +130,6 @@ export const ChatInterface: React.FC = () => {
     })
   }
 
-  const handleGenerateAnalytics = async () => {
-    if (!currentSession || !selectedReport || !reportTitle.trim()) {
-      toast.error('Vui lòng điền đầy đủ thông tin')
-      return
-    }
-
-    setIsGenerating(true)
-    try {
-      const result = await generateReport({
-        sessionId: currentSession.id,
-        reportFinancialId: selectedReport.id,
-        title: reportTitle.trim()
-      })
-
-      if (result.success) {
-        toast.success('Tạo báo cáo phân tích thành công!')
-        setShowGenerateModal(false)
-        setSelectedReport(null)
-        setReportTitle('')
-      } else {
-        toast.error(result.message)
-      }
-    } catch (error) {
-      toast.error('Có lỗi xảy ra khi tạo báo cáo')
-    } finally {
-      setIsGenerating(false)
-    }
-  }
-
-  const openGenerateModal = () => {
-    setShowGenerateModal(true)
-    loadMyReports() // Load reports when opening modal
-    loadPublicReports() // Load public reports too
-  }
-
   // Filter sessions based on search text
   const filteredSessions = sessions.filter((session) => {
     if (!searchText.trim()) return true
@@ -140,7 +142,7 @@ export const ChatInterface: React.FC = () => {
   })
 
   return (
-    <div className='flex h-full bg-gradient-to-br from-slate-50 to-blue-50'>
+    <div className='flex h-full bg-gradient-to-br from-slate-50 to-blue-50 overflow-hidden'>
       {/* Sidebar - Sessions List */}
       <div className='w-80 bg-white/80 backdrop-blur-sm border-r border-slate-200/60 flex flex-col shadow-lg'>
         {/* Header */}
@@ -417,125 +419,85 @@ export const ChatInterface: React.FC = () => {
                     </p>
                   </div>
                 </div>
-
-                {/* Generate Analytics Button */}
-                <Button
-                  onClick={openGenerateModal}
-                  variant='outline'
-                  className='flex items-center gap-2 bg-white/80 hover:bg-white border-slate-300 text-slate-700 hover:text-slate-900'
-                >
-                  <BarChart3 className='w-4 h-4' />
-                  Tạo báo cáo phân tích
-                </Button>
               </div>
             </div>
-            {/* Messages Area */}
-            <div className='flex-1 overflow-y-auto p-6 space-y-6'>
-              {/* Loading Progress Indicator - Only show when initially loading questions */}
-              {isLoading && messages.length === 0 && (
-                <div className='text-center py-16'>
-                  <div className='text-slate-400 mb-8'>
-                    <div className='w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-slate-100 to-slate-200 rounded-3xl flex items-center justify-center shadow-inner'>
-                      <div className='w-8 h-8 border-2 border-slate-400 border-t-transparent rounded-full animate-spin'></div>
-                    </div>
-                    <h3 className='text-xl font-semibold text-slate-700 mb-2'>Đang tải lịch sử chat...</h3>
-                    <p className='text-slate-500 max-w-md mx-auto'>Đang tải các câu hỏi từ phiên chat này</p>
-                  </div>
-                </div>
-              )}
-
-              {!isLoading && messages.length === 0 && !isAsking && (
-                <div className='text-center py-16'>
-                  <div className='text-slate-400 mb-8'>
-                    <div className='w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-slate-100 to-slate-200 rounded-3xl flex items-center justify-center shadow-inner'>
-                      <svg className='w-10 h-10 text-slate-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth={1.5}
-                          d='M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z'
-                        />
-                      </svg>
-                    </div>
-                    <h3 className='text-xl font-semibold text-slate-700 mb-2'>Bắt đầu cuộc trò chuyện</h3>
-                    <p className='text-slate-500 max-w-md mx-auto'>
-                      Đặt câu hỏi về báo cáo tài chính và nhận được phân tích chi tiết từ AI
-                    </p>
-                  </div>
-                </div>
-              )}
-              {/* Messages */}
-              {messages.map((message, index) => {
-                // Check if this is a user message and if there's an answer after it
-                const isUserMessage = message.type === 'user'
-                const nextMessage = messages[index + 1]
-                const hasAnswer = nextMessage && nextMessage.type === 'assistant'
-                const isLoadingAnswer = loadingAnswers.has(message.id)
-
-                // Check if this is the latest user message and we're currently asking a question
-                const isLatestUserMessage = isUserMessage && index === messages.length - 1
-                const shouldShowLoadButton =
-                  isUserMessage && !hasAnswer && !isLoadingAnswer && !(isLatestUserMessage && isAsking)
-
-                return (
-                  <div key={message.id}>
-                    {/* Message */}
-                    <div className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                      <div
-                        className={`flex items-start gap-3 max-w-[80%] ${message.type === 'user' ? 'flex-row-reverse' : ''}`}
-                      >
-                        {/* Avatar */}
-                        <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-md ${
-                            message.type === 'user'
-                              ? 'bg-gradient-to-br from-blue-500 to-indigo-600'
-                              : 'bg-gradient-to-br from-emerald-500 to-teal-600'
-                          }`}
-                        >
-                          {message.type === 'user' ? (
-                            <svg className='w-4 h-4 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                              <path
-                                strokeLinecap='round'
-                                strokeLinejoin='round'
-                                strokeWidth={2}
-                                d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
-                              />
-                            </svg>
-                          ) : (
-                            <svg className='w-4 h-4 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                              <path
-                                strokeLinecap='round'
-                                strokeLinejoin='round'
-                                strokeWidth={2}
-                                d='M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z'
-                              />
-                            </svg>
-                          )}
-                        </div>
-
-                        {/* Message Bubble */}
-                        <div
-                          className={`rounded-2xl px-4 py-3 shadow-sm ${
-                            message.type === 'user'
-                              ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white'
-                              : 'bg-white border border-slate-200 text-slate-800'
-                          }`}
-                        >
-                          <p className='text-sm whitespace-pre-wrap leading-relaxed'>{message.content}</p>
-                          <p className={`text-xs mt-2 ${message.type === 'user' ? 'text-blue-100' : 'text-slate-500'}`}>
-                            {formatTimestamp(message.createdAt)}
-                          </p>
-                        </div>
+            {/* Messages Area - Fixed height with scroll */}
+            <div className='flex-1 flex flex-col min-h-0 relative'>
+              <div
+                ref={messagesContainerRef}
+                onScroll={handleScroll}
+                className='flex-1 overflow-y-auto p-6 space-y-6 max-h-full'
+              >
+                {/* Loading Progress Indicator - Only show when initially loading questions */}
+                {isLoading && messages.length === 0 && (
+                  <div className='text-center py-16'>
+                    <div className='text-slate-400 mb-8'>
+                      <div className='w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-slate-100 to-slate-200 rounded-3xl flex items-center justify-center shadow-inner'>
+                        <div className='w-8 h-8 border-2 border-slate-400 border-t-transparent rounded-full animate-spin'></div>
                       </div>
+                      <h3 className='text-xl font-semibold text-slate-700 mb-2'>Đang tải lịch sử chat...</h3>
+                      <p className='text-slate-500 max-w-md mx-auto'>Đang tải các câu hỏi từ phiên chat này</p>
                     </div>
-                    {/* Load Answer Button or Loading State (only for user messages without answers) */}
-                    {shouldShowLoadButton && (
-                      <div className='flex justify-start mt-4'>
-                        <div className='flex items-start gap-3 max-w-[80%]'>
-                          {/* AI Avatar */}
-                          <div className='w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-md bg-gradient-to-br from-emerald-500 to-teal-600'>
-                            {isLoadingAnswer ? (
-                              <div className='w-4 h-4 border border-white border-t-transparent rounded-full animate-spin'></div>
+                  </div>
+                )}
+
+                {!isLoading && messages.length === 0 && !isAsking && (
+                  <div className='text-center py-16'>
+                    <div className='text-slate-400 mb-8'>
+                      <div className='w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-slate-100 to-slate-200 rounded-3xl flex items-center justify-center shadow-inner'>
+                        <svg className='w-10 h-10 text-slate-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth={1.5}
+                            d='M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z'
+                          />
+                        </svg>
+                      </div>
+                      <h3 className='text-xl font-semibold text-slate-700 mb-2'>Bắt đầu cuộc trò chuyện</h3>
+                      <p className='text-slate-500 max-w-md mx-auto'>
+                        Đặt câu hỏi về báo cáo tài chính và nhận được phân tích chi tiết từ AI
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {/* Messages */}
+                {messages.map((message, index) => {
+                  // Check if this is a user message and if there's an answer after it
+                  const isUserMessage = message.type === 'user'
+                  const nextMessage = messages[index + 1]
+                  const hasAnswer = nextMessage && nextMessage.type === 'assistant'
+                  const isLoadingAnswer = loadingAnswers.has(message.id)
+
+                  // Check if this is the latest user message and we're currently asking a question
+                  const isLatestUserMessage = isUserMessage && index === messages.length - 1
+                  const shouldShowLoadButton =
+                    isUserMessage && !hasAnswer && !isLoadingAnswer && !(isLatestUserMessage && isAsking)
+
+                  return (
+                    <div key={message.id}>
+                      {/* Message */}
+                      <div className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div
+                          className={`flex items-start gap-3 max-w-[80%] ${message.type === 'user' ? 'flex-row-reverse' : ''}`}
+                        >
+                          {/* Avatar */}
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-md ${
+                              message.type === 'user'
+                                ? 'bg-gradient-to-br from-blue-500 to-indigo-600'
+                                : 'bg-gradient-to-br from-emerald-500 to-teal-600'
+                            }`}
+                          >
+                            {message.type === 'user' ? (
+                              <svg className='w-4 h-4 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                <path
+                                  strokeLinecap='round'
+                                  strokeLinejoin='round'
+                                  strokeWidth={2}
+                                  d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
+                                />
+                              </svg>
                             ) : (
                               <svg className='w-4 h-4 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                                 <path
@@ -548,83 +510,160 @@ export const ChatInterface: React.FC = () => {
                             )}
                           </div>
 
-                          {/* Load Answer Button or Loading State */}
-                          {isLoadingAnswer ? (
-                            <div className='bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl px-4 py-3 shadow-sm'>
+                          {/* Message Bubble */}
+                          <div
+                            className={`rounded-2xl px-4 py-3 shadow-sm ${
+                              message.type === 'user'
+                                ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white'
+                                : message.isProcessing
+                                  ? 'bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 text-emerald-800'
+                                  : 'bg-white border border-slate-200 text-slate-800'
+                            }`}
+                          >
+                            {message.isProcessing ? (
                               <div className='flex items-center gap-3'>
                                 <div className='flex gap-1'>
                                   <div className='w-2 h-2 bg-emerald-500 rounded-full animate-bounce [animation-delay:-0.3s]'></div>
                                   <div className='w-2 h-2 bg-emerald-500 rounded-full animate-bounce [animation-delay:-0.15s]'></div>
                                   <div className='w-2 h-2 bg-emerald-500 rounded-full animate-bounce'></div>
                                 </div>
-                                <span className='text-sm text-emerald-700 font-medium'>AI đang tạo câu trả lời...</span>
+                                <p className='text-sm font-medium'>{message.content}</p>
                               </div>
-                            </div>
-                          ) : (
-                            <div className='bg-gradient-to-r from-slate-50 to-blue-50 border border-slate-200 rounded-2xl px-4 py-3 shadow-sm'>
-                              <div className='flex items-center gap-3'>
-                                <Button
-                                  size='sm'
-                                  onClick={() => {
-                                    if (currentSession) {
-                                      loadAnswerForQuestion(message.id, message.content, currentSession.id)
-                                    }
-                                  }}
-                                  className='bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-xs px-3 py-1 h-auto'
+                            ) : (
+                              <p className='text-sm whitespace-pre-wrap leading-relaxed'>{message.content}</p>
+                            )}
+                            <p
+                              className={`text-xs mt-2 ${
+                                message.type === 'user'
+                                  ? 'text-blue-100'
+                                  : message.isProcessing
+                                    ? 'text-emerald-600'
+                                    : 'text-slate-500'
+                              }`}
+                            >
+                              {formatTimestamp(message.createdAt)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Load Answer Button or Loading State (only for user messages without answers) */}
+                      {shouldShowLoadButton && (
+                        <div className='flex justify-start mt-4'>
+                          <div className='flex items-start gap-3 max-w-[80%]'>
+                            {/* AI Avatar */}
+                            <div className='w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-md bg-gradient-to-br from-emerald-500 to-teal-600'>
+                              {isLoadingAnswer ? (
+                                <div className='w-4 h-4 border border-white border-t-transparent rounded-full animate-spin'></div>
+                              ) : (
+                                <svg
+                                  className='w-4 h-4 text-white'
+                                  fill='none'
+                                  stroke='currentColor'
+                                  viewBox='0 0 24 24'
                                 >
-                                  <svg className='w-3 h-3 mr-1' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                    <path
-                                      strokeLinecap='round'
-                                      strokeLinejoin='round'
-                                      strokeWidth={2}
-                                      d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'
-                                    />
-                                  </svg>
-                                  Tải câu trả lời
-                                </Button>
-                                <span className='text-xs text-slate-600'>
-                                  Bấm để AI tạo câu trả lời cho câu hỏi này
-                                </span>
-                              </div>
+                                  <path
+                                    strokeLinecap='round'
+                                    strokeLinejoin='round'
+                                    strokeWidth={2}
+                                    d='M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z'
+                                  />
+                                </svg>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-              {/* Loading Message for new questions */}
-              {isAsking && (
-                <div className='flex justify-start'>
-                  <div className='flex items-start gap-3 max-w-[80%]'>
-                    {/* AI Avatar */}
-                    <div className='w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-md bg-gradient-to-br from-emerald-500 to-teal-600'>
-                      <svg className='w-4 h-4 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth={2}
-                          d='M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z'
-                        />
-                      </svg>
-                    </div>
 
-                    {/* Loading Bubble */}
-                    <div className='bg-white border border-slate-200 rounded-2xl px-4 py-3 shadow-sm'>
-                      <div className='flex items-center gap-2'>
-                        <div className='flex gap-1'>
-                          <div className='w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.3s]'></div>
-                          <div className='w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.15s]'></div>
-                          <div className='w-2 h-2 bg-slate-400 rounded-full animate-bounce'></div>
+                            {/* Load Answer Button or Loading State */}
+                            {isLoadingAnswer ? (
+                              <div className='bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl px-4 py-3 shadow-sm'>
+                                <div className='flex items-center gap-3'>
+                                  <div className='flex gap-1'>
+                                    <div className='w-2 h-2 bg-emerald-500 rounded-full animate-bounce [animation-delay:-0.3s]'></div>
+                                    <div className='w-2 h-2 bg-emerald-500 rounded-full animate-bounce [animation-delay:-0.15s]'></div>
+                                    <div className='w-2 h-2 bg-emerald-500 rounded-full animate-bounce'></div>
+                                  </div>
+                                  <span className='text-sm text-emerald-700 font-medium'>
+                                    AI đang tạo câu trả lời...
+                                  </span>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className='bg-gradient-to-r from-slate-50 to-blue-50 border border-slate-200 rounded-2xl px-4 py-3 shadow-sm'>
+                                <div className='flex items-center gap-3'>
+                                  <Button
+                                    size='sm'
+                                    onClick={() => {
+                                      if (currentSession) {
+                                        loadAnswerForQuestion(message.id, message.content, currentSession.id)
+                                      }
+                                    }}
+                                    className='bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-xs px-3 py-1 h-auto'
+                                  >
+                                    <svg className='w-3 h-3 mr-1' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                      <path
+                                        strokeLinecap='round'
+                                        strokeLinejoin='round'
+                                        strokeWidth={2}
+                                        d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'
+                                      />
+                                    </svg>
+                                    Tải câu trả lời
+                                  </Button>
+                                  <span className='text-xs text-slate-600'>
+                                    Bấm để AI tạo câu trả lời cho câu hỏi này
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <span className='text-sm text-slate-600 ml-2'>AI đang phân tích...</span>
+                      )}
+                    </div>
+                  )
+                })}
+                {/* Loading Message for new questions */}
+                {isAsking && (
+                  <div className='flex justify-start'>
+                    <div className='flex items-start gap-3 max-w-[80%]'>
+                      {/* AI Avatar */}
+                      <div className='w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-md bg-gradient-to-br from-emerald-500 to-teal-600'>
+                        <svg className='w-4 h-4 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth={2}
+                            d='M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z'
+                          />
+                        </svg>
+                      </div>
+
+                      {/* Loading Bubble */}
+                      <div className='bg-white border border-slate-200 rounded-2xl px-4 py-3 shadow-sm'>
+                        <div className='flex items-center gap-2'>
+                          <div className='flex gap-1'>
+                            <div className='w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.3s]'></div>
+                            <div className='w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.15s]'></div>
+                            <div className='w-2 h-2 bg-slate-400 rounded-full animate-bounce'></div>
+                          </div>
+                          <span className='text-sm text-slate-600 ml-2'>AI đang phân tích...</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Scroll to bottom button */}
+              {showScrollToBottom && (
+                <button
+                  onClick={scrollToBottom}
+                  className='absolute bottom-4 right-4 w-10 h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 z-10'
+                  title='Scroll to bottom'
+                >
+                  <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 14l-7 7m0 0l-7-7m7 7V3' />
+                  </svg>
+                </button>
               )}
-              <div ref={messagesEndRef} />
             </div>
 
             {/* Input Area */}
@@ -656,19 +695,27 @@ export const ChatInterface: React.FC = () => {
                   </Button>
                 </div>
               )}
-              <form onSubmit={handleAskQuestion} className='flex gap-3'>
+              <form onSubmit={handleAskQuestion} className='flex gap-3 items-end'>
                 <div className='flex-1 relative'>
-                  <Input
+                  <Textarea
+                    ref={textareaRef}
                     value={questionText}
                     onChange={(e) => setQuestionText(e.target.value)}
                     placeholder={isAsking ? 'Đang chờ phản hồi từ AI...' : 'Đặt câu hỏi về báo cáo tài chính...'}
                     disabled={isAsking}
-                    className={`pr-12 h-12 rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white/80 backdrop-blur-sm shadow-sm transition-all duration-200 ${
+                    className={`pr-16 min-h-[3rem] max-h-[12rem] rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white/80 backdrop-blur-sm shadow-sm transition-all duration-200 resize-none ${
                       isAsking ? 'opacity-60 cursor-not-allowed' : ''
                     }`}
                     maxLength={1000}
+                    rows={1}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        handleAskQuestion(e)
+                      }
+                    }}
                   />
-                  <div className='absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-slate-400'>
+                  <div className='absolute right-3 bottom-3 text-xs text-slate-400 bg-white/80 px-2 py-1 rounded'>
                     {isAsking ? (
                       <div className='flex items-center gap-1'>
                         <div className='w-3 h-3 border border-slate-400 border-t-transparent rounded-full animate-spin'></div>
@@ -682,7 +729,7 @@ export const ChatInterface: React.FC = () => {
                 <Button
                   type='submit'
                   disabled={!questionText.trim() || isAsking}
-                  className='h-12 px-6 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+                  className='h-12 px-6 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shrink-0'
                 >
                   {isAsking ? (
                     <div className='flex items-center gap-2'>
@@ -745,168 +792,6 @@ export const ChatInterface: React.FC = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onSessionCreated={handleSessionCreated}
       />
-
-      {/* Generate Analytics Modal */}
-      {showGenerateModal && (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'>
-          <div className='bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto'>
-            <div className='p-6 border-b border-gray-200'>
-              <h2 className='text-xl font-bold text-gray-900 flex items-center gap-2'>
-                <BarChart3 className='w-5 h-5 text-blue-600' />
-                Tạo Báo Cáo Phân Tích
-              </h2>
-              <p className='text-gray-600 mt-1'>Tạo báo cáo phân tích từ session chat hiện tại</p>
-            </div>
-
-            <div className='p-6 space-y-6'>
-              {/* Session Info */}
-              <div className='bg-blue-50 rounded-lg p-4'>
-                <h3 className='font-medium text-blue-900 mb-2'>Session hiện tại</h3>
-                <p className='text-blue-800 text-sm'>{currentSession?.title}</p>
-                <p className='text-blue-600 text-xs mt-1'>ID: {currentSession?.id}</p>
-              </div>
-
-              {/* Title Input */}
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  Tiêu đề báo cáo <span className='text-red-500'>*</span>
-                </label>
-                <Input
-                  type='text'
-                  value={reportTitle}
-                  onChange={(e) => setReportTitle(e.target.value)}
-                  placeholder='Nhập tiêu đề cho báo cáo phân tích'
-                  className='w-full'
-                />
-              </div>
-
-              {/* Report Type Selection */}
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>Loại báo cáo</label>
-                <div className='flex gap-2 mb-3'>
-                  <Button
-                    type='button'
-                    variant={reportType === 'my' ? 'default' : 'outline'}
-                    size='sm'
-                    onClick={() => {
-                      setReportType('my')
-                      setSelectedReport(null)
-                    }}
-                    className='flex items-center gap-1'
-                  >
-                    <FileText className='w-4 h-4' />
-                    Báo cáo của tôi ({myReports.length})
-                  </Button>
-                  <Button
-                    type='button'
-                    variant={reportType === 'public' ? 'default' : 'outline'}
-                    size='sm'
-                    onClick={() => {
-                      setReportType('public')
-                      setSelectedReport(null)
-                    }}
-                    className='flex items-center gap-1'
-                  >
-                    <BarChart3 className='w-4 h-4' />
-                    Báo cáo công khai ({publicReports.length})
-                  </Button>
-                </div>
-              </div>
-
-              {/* Report Selection */}
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  Chọn báo cáo tài chính <span className='text-red-500'>*</span>
-                </label>
-                <div className='border border-gray-300 rounded-lg max-h-60 overflow-y-auto'>
-                  {(reportType === 'my' ? myReports : publicReports).length === 0 ? (
-                    <div className='p-4 text-center text-gray-500'>
-                      <FileText className='w-8 h-8 mx-auto mb-2 text-gray-400' />
-                      <p>Không có báo cáo nào</p>
-                      <p className='text-xs mt-1'>
-                        {reportType === 'my'
-                          ? 'Vui lòng upload báo cáo tài chính trước'
-                          : 'Chưa có báo cáo công khai nào'}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className='divide-y divide-gray-200'>
-                      {(reportType === 'my' ? myReports : publicReports).map((report) => (
-                        <div
-                          key={report.id}
-                          className={`p-3 cursor-pointer hover:bg-gray-50 transition-colors ${
-                            selectedReport?.id === report.id ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
-                          }`}
-                          onClick={() => setSelectedReport(report)}
-                        >
-                          <div className='flex items-start gap-3'>
-                            <div
-                              className={`w-4 h-4 rounded-full border-2 mt-1 ${
-                                selectedReport?.id === report.id ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
-                              }`}
-                            >
-                              {selectedReport?.id === report.id && (
-                                <div className='w-2 h-2 bg-white rounded-full mx-auto mt-0.5'></div>
-                              )}
-                            </div>
-                            <div className='flex-1 min-w-0'>
-                              <p className='font-medium text-gray-900 truncate'>{report.fileName}</p>
-                              <div className='flex items-center gap-4 text-xs text-gray-500 mt-1'>
-                                <span>{report.companyName}</span>
-                                <span>
-                                  {report.year} - {report.period}
-                                </span>
-                                {report.visibility === 'public' && (
-                                  <span className='bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs'>
-                                    Công khai
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className='flex justify-end gap-3 pt-4 border-t border-gray-200'>
-                <Button
-                  type='button'
-                  variant='outline'
-                  onClick={() => {
-                    setShowGenerateModal(false)
-                    setSelectedReport(null)
-                    setReportTitle('')
-                  }}
-                  disabled={isGenerating}
-                >
-                  Hủy
-                </Button>
-                <Button
-                  onClick={handleGenerateAnalytics}
-                  disabled={isGenerating || !selectedReport || !reportTitle.trim()}
-                  className='flex items-center gap-2'
-                >
-                  {isGenerating ? (
-                    <>
-                      <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin' />
-                      Đang tạo...
-                    </>
-                  ) : (
-                    <>
-                      <BarChart3 className='w-4 h-4' />
-                      Tạo báo cáo
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

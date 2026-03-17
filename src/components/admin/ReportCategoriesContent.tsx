@@ -12,11 +12,13 @@ import {
   FolderOpen,
   FileText,
   Calendar,
-  Building
+  Building,
+  Eye
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import ConfirmModal from '@/components/ui/ConfirmModal'
+import ViewReportCategoryModal from './ViewReportCategoryModal'
 import toast from 'react-hot-toast'
 
 const ReportCategoriesContent = () => {
@@ -33,7 +35,7 @@ const ReportCategoriesContent = () => {
   } = useAdmin()
 
   const [page, setPage] = useState(1)
-  const [pageSize] = useState(10)
+  const [pageSize] = useState(5)
   const [searchTerm, setSearchTerm] = useState('')
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingCategory, setEditingCategory] = useState<ReportCategory | null>(null)
@@ -41,6 +43,8 @@ const ReportCategoriesContent = () => {
   const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [categoryToDelete, setCategoryToDelete] = useState<{ id: string; name: string } | null>(null)
+  const [viewingCategory, setViewingCategory] = useState<ReportCategory | null>(null)
+  const [showViewModal, setShowViewModal] = useState(false)
 
   // Form states
   const [formData, setFormData] = useState<CreateReportCategoryRequest>({
@@ -58,7 +62,7 @@ const ReportCategoriesContent = () => {
       category.description.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const totalPages = Math.ceil(totalCategories / pageSize)
+  const totalPages = Math.max(1, Math.ceil(totalCategories / pageSize))
 
   const handleCreateCategory = async () => {
     if (!formData.name.trim() || !formData.description.trim()) {
@@ -83,6 +87,11 @@ const ReportCategoriesContent = () => {
       description: category.description
     })
     setShowEditModal(true)
+  }
+
+  const handleViewCategory = (category: ReportCategory) => {
+    setViewingCategory(category)
+    setShowViewModal(true)
   }
 
   const handleUpdateCategory = async () => {
@@ -201,7 +210,7 @@ const ReportCategoriesContent = () => {
 
         {/* Quick Stats */}
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-          <div className='bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200'>
+          <div className='bg-linear-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200'>
             <div className='flex items-center gap-3'>
               <div className='w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center'>
                 <FolderOpen className='w-5 h-5 text-blue-600' />
@@ -212,7 +221,7 @@ const ReportCategoriesContent = () => {
               </div>
             </div>
           </div>
-          <div className='bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200'>
+          <div className='bg-linear-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200'>
             <div className='flex items-center gap-3'>
               <div className='w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center'>
                 <FileText className='w-5 h-5 text-green-600' />
@@ -225,7 +234,7 @@ const ReportCategoriesContent = () => {
               </div>
             </div>
           </div>
-          <div className='bg-gradient-to-r from-purple-50 to-violet-50 rounded-lg p-4 border border-purple-200'>
+          <div className='bg-linear-to-r from-purple-50 to-violet-50 rounded-lg p-4 border border-purple-200'>
             <div className='flex items-center gap-3'>
               <div className='w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center'>
                 <div className='w-3 h-3 bg-green-500 rounded-full'></div>
@@ -276,8 +285,18 @@ const ReportCategoriesContent = () => {
                     <Button
                       variant='ghost'
                       size='sm'
+                      onClick={() => handleViewCategory(category)}
+                      className='text-slate-600 hover:text-slate-700 hover:bg-slate-50'
+                      title='Xem chi tiết'
+                    >
+                      <Eye className='w-4 h-4' />
+                    </Button>
+                    <Button
+                      variant='ghost'
+                      size='sm'
                       onClick={() => handleEditCategory(category)}
                       className='text-blue-600 hover:text-blue-700 hover:bg-blue-50'
+                      title='Chỉnh sửa'
                     >
                       <Edit className='w-4 h-4' />
                     </Button>
@@ -287,6 +306,7 @@ const ReportCategoriesContent = () => {
                       onClick={() => handleDeleteCategory(category.id, category.name)}
                       disabled={deletingCategoryId === category.id}
                       className='text-red-600 hover:text-red-700 hover:bg-red-50 disabled:opacity-50'
+                      title='Xóa'
                     >
                       {deletingCategoryId === category.id ? (
                         <div className='w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin' />
@@ -317,8 +337,8 @@ const ReportCategoriesContent = () => {
                         <div key={report.id} className='flex items-start gap-2 text-xs'>
                           <FileText className='w-3 h-3 text-slate-400 mt-0.5 shrink-0' />
                           <div className='flex-1 min-w-0'>
-                            <p className='text-slate-700 truncate' title={report.title}>
-                              {report.title}
+                            <p className='text-slate-700 truncate' title={report.title || report.companyName}>
+                              {report.title || `Báo cáo ${report.companyName}`}
                             </p>
                             <div className='flex items-center gap-2 text-slate-500 mt-1'>
                               <Building className='w-3 h-3' />
@@ -349,37 +369,35 @@ const ReportCategoriesContent = () => {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className='flex items-center justify-between bg-white rounded-xl border border-slate-200 px-6 py-4'>
-          <div className='text-sm text-slate-600'>
-            Hiển thị {(page - 1) * pageSize + 1} đến {Math.min(page * pageSize, totalCategories)} trong tổng số{' '}
-            {totalCategories} danh mục
-          </div>
-          <div className='flex items-center gap-2'>
-            <Button
-              variant='outline'
-              size='sm'
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className='px-3'
-            >
-              <ChevronLeft className='w-4 h-4' />
-            </Button>
-            <span className='text-sm text-slate-700 px-3'>
-              Trang {page} / {totalPages}
-            </span>
-            <Button
-              variant='outline'
-              size='sm'
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className='px-3'
-            >
-              <ChevronRight className='w-4 h-4' />
-            </Button>
-          </div>
+      <div className='flex items-center justify-between bg-white rounded-xl border border-slate-200 px-6 py-4'>
+        <div className='text-sm text-slate-600'>
+          Hiển thị {(page - 1) * pageSize + 1} đến {Math.min(page * pageSize, totalCategories)} trong tổng số{' '}
+          {totalCategories} danh mục
         </div>
-      )}
+        <div className='flex items-center gap-2'>
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className='px-3'
+          >
+            <ChevronLeft className='w-4 h-4' />
+          </Button>
+          <span className='text-sm text-slate-700 px-3'>
+            Trang {page} / {totalPages}
+          </span>
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className='px-3'
+          >
+            <ChevronRight className='w-4 h-4' />
+          </Button>
+        </div>
+      </div>
 
       {/* Create Modal */}
       {showCreateModal && (
@@ -495,6 +513,18 @@ const ReportCategoriesContent = () => {
         type='danger'
         isLoading={deletingCategoryId === categoryToDelete?.id}
       />
+
+      {/* View Modal */}
+      {showViewModal && viewingCategory && (
+        <ViewReportCategoryModal
+          category={viewingCategory}
+          isOpen={showViewModal}
+          onClose={() => {
+            setShowViewModal(false)
+            setViewingCategory(null)
+          }}
+        />
+      )}
     </div>
   )
 }

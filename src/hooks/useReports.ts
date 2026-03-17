@@ -1,12 +1,15 @@
 import { useState, useCallback } from 'react'
 import reportsService from '@/services/reportsService'
+import backgroundJobService from '@/services/backgroundJobService'
 import type {
   Report,
   ReportDetail,
   GetReportsRequest,
   UploadReportRequest,
   UpdateVisibilityRequest,
-  ReportCategory
+  ReportCategory,
+  SearchReportsRequest,
+  SearchReportsResponse
 } from '@/types/reports.types'
 
 interface UseReportsReturn {
@@ -20,12 +23,20 @@ interface UseReportsReturn {
   error: string | null
   totalMyReports: number
   totalPublicReports: number
+  uploadProgress: number
 
   // Actions
   loadMyReports: (params?: GetReportsRequest) => Promise<{ success: boolean; message: string }>
   loadPublicReports: (params?: GetReportsRequest) => Promise<{ success: boolean; message: string }>
   loadReportDetail: (reportId: string) => Promise<{ success: boolean; message: string }>
   uploadReport: (data: UploadReportRequest) => Promise<{ success: boolean; message: string; reportId?: string }>
+  uploadReportAsync: (
+    data: UploadReportRequest,
+    onProgress?: (progress: number) => void
+  ) => Promise<{ success: boolean; message: string; reportId?: string; backgroundJobId?: string }>
+  searchReports: (
+    params?: SearchReportsRequest
+  ) => Promise<{ success: boolean; message: string; data?: SearchReportsResponse }>
   updateVisibility: (reportId: string, data: UpdateVisibilityRequest) => Promise<{ success: boolean; message: string }>
   deleteReport: (reportId: string) => Promise<{ success: boolean; message: string }>
   downloadReport: (reportId: string, fileName: string) => Promise<{ success: boolean; message: string }>
@@ -43,6 +54,7 @@ export const useReports = (): UseReportsReturn => {
   const [error, setError] = useState<string | null>(null)
   const [totalMyReports, setTotalMyReports] = useState(0)
   const [totalPublicReports, setTotalPublicReports] = useState(0)
+  const [uploadProgress, setUploadProgress] = useState(0)
 
   const clearError = useCallback(() => setError(null), [])
   const setErrorMessage = useCallback((message: string) => setError(message), [])
@@ -126,9 +138,11 @@ export const useReports = (): UseReportsReturn => {
     }
   }, [])
 
+  // Legacy upload method (synchronous) - DEPRECATED
   const uploadReport = useCallback(async (data: UploadReportRequest) => {
     setIsLoading(true)
     setError(null)
+    setUploadProgress(0)
 
     try {
       const response = await reportsService.uploadReport(data)
@@ -148,8 +162,61 @@ export const useReports = (): UseReportsReturn => {
       }
     } finally {
       setIsLoading(false)
+      setUploadProgress(0)
     }
   }, [])
+
+  // New async upload method with background processing - RECOMMENDED
+  const uploadReportAsync = useCallback(
+    async (data: UploadReportRequest) => {
+      setIsLoading(true)
+      setError(null)
+      setUploadProgress(0)
+
+      try {
+        // Step 1: Start async upload
+        const asyncResponse = await reportsService.uploadReportAsync(data)
+
+        // Step 2: Start background job (non-blocking)
+        const backgroundJobId = backgroundJobService.startJob({
+          type: 'upload',
+          jobId: asyncResponse.jobId,
+          fileName: data.file.name,
+          onComplete: () => {
+            // Refresh reports list when upload completes
+            loadMyReports()
+            loadPublicReports()
+          },
+          onError: (error) => {
+            console.error('Background upload failed:', error)
+          }
+        })
+
+        setIsLoading(false)
+        setUploadProgress(0)
+
+        return {
+          success: true,
+          message: `Upload started in background. You'll be notified when it's complete.`,
+          reportId: undefined, // Will be available when job completes
+          backgroundJobId
+        }
+      } catch (err: unknown) {
+        const errorMessage =
+          (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+          (err as Error)?.message ||
+          'Failed to start upload'
+        setError(errorMessage)
+        setIsLoading(false)
+        setUploadProgress(0)
+        return {
+          success: false,
+          message: errorMessage
+        }
+      }
+    },
+    [loadMyReports, loadPublicReports]
+  )
 
   const updateVisibility = useCallback(
     async (reportId: string, data: UpdateVisibilityRequest) => {
@@ -260,6 +327,31 @@ export const useReports = (): UseReportsReturn => {
     }
   }, [])
 
+  const searchReports = useCallback(async (params: SearchReportsRequest = {}) => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await reportsService.searchReports(params)
+
+      return {
+        success: true,
+        message: `Found ${response.total} reports`,
+        data: response
+      }
+    } catch (err: unknown) {
+      const errorMessage =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to search reports'
+      setError(errorMessage)
+      return {
+        success: false,
+        message: errorMessage
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
   const loadReportCategories = useCallback(async () => {
     setIsLoading(true)
     setError(null)
@@ -297,12 +389,15 @@ export const useReports = (): UseReportsReturn => {
     error,
     totalMyReports,
     totalPublicReports,
+    uploadProgress,
 
     // Actions
     loadMyReports,
     loadPublicReports,
     loadReportDetail,
-    uploadReport,
+    uploadReport, // Legacy method
+    uploadReportAsync, // New recommended method
+    searchReports, // New search method
     updateVisibility,
     deleteReport,
     downloadReport,

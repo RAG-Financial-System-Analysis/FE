@@ -15,7 +15,13 @@ class AnalyticsService {
     return response.data
   }
 
-  // Generate analytics report
+  // Generate analytics report (async) - RECOMMENDED
+  async generateReportAsync(data: GenerateAnalyticsReportRequest): Promise<{ jobId: string }> {
+    const response = await axiosInstance.post('/api/analytics/generate-async', data)
+    return response.data
+  }
+
+  // Generate analytics report (sync) - DEPRECATED
   async generateReport(data: GenerateAnalyticsReportRequest): Promise<GenerateAnalyticsReportResponse> {
     const response = await axiosInstance.post('/api/analytics/generate', data)
     return response.data

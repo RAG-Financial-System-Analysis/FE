@@ -12,7 +12,6 @@ export interface GetAnalyticsTypesResponse {
 
 export interface GenerateAnalyticsReportRequest {
   sessionId: string
-  reportFinancialId: string
   title: string
 }
 
@@ -48,7 +47,6 @@ export interface AnalyticsReportDetail {
   id: string
   title: string
   sessionId: string
-  reportFinancialId: string
   generatedContent: string
   fileUrl: string
   generationType: string

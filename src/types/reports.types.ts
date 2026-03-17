@@ -73,6 +73,13 @@ export interface UploadReportResponse {
   metrics: ReportMetric[]
 }
 
+// New async upload response
+export interface UploadReportAsyncResponse {
+  jobId: string
+  status: string
+  message: string
+}
+
 export interface UpdateVisibilityRequest {
   visibility: 'private' | 'public'
 }
@@ -84,6 +91,32 @@ export interface ReportCategory {
   description: string
 }
 
+// Search Reports Response
+export interface SearchReportItem {
+  id: string
+  ticker: string
+  companyName: string
+  year: number
+  period: string
+  relevanceScore: number
+}
+
+export interface SearchReportsResponse {
+  total: number
+  page: number
+  pageSize: number
+  data: SearchReportItem[]
+}
+
 export interface GetReportCategoriesResponse {
   categories: ReportCategory[]
+}
+
+export interface SearchReportsRequest {
+  query?: string
+  companyId?: string
+  year?: number
+  period?: string
+  page?: number
+  pageSize?: number
 }
