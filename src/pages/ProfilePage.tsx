@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom'
 import { User, Mail, Shield, Clock, ArrowLeft, LogOut, Edit3, CheckCircle, ChevronRight } from 'lucide-react'
-import Sidebar from '@/components/layout/Sidebar'
-import { useAuth } from '@/context/AuthContext'
-import { Button } from '@/components/ui/button'
+import { Sidebar } from '@/components/layout'
+import { useAuth } from '@/context'
+import { Button } from '@/components/ui'
 
 const ProfilePage = () => {
   const { user, role, logout } = useAuth()
@@ -17,7 +17,7 @@ const ProfilePage = () => {
     ? user.fullName
         .trim()
         .split(' ')
-        .map((n) => n[0])
+        .map((n: string) => n[0])
         .join('')
         .toUpperCase()
         .slice(0, 2)

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { X, Save, AlertCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import type { User, UpdateUserRequest } from '@/types/admin.types'
+import { Button } from '@/components/ui'
+import { Input } from '@/components/ui'
+import type { User, UpdateUserRequest } from '@/types'
 
 interface EditUserModalProps {
   user: User | null

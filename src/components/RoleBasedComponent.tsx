@@ -1,4 +1,4 @@
-import { useAuth, type UserRole } from '@/context/AuthContext'
+import { useAuth, type UserRole } from '@/context'
 import type { ReactNode } from 'react'
 
 interface RoleBasedComponentProps {

@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom'
-import { useAuth } from '@/context/AuthContext'
-import type { UserRole } from '@/types/auth.types'
+import { useAuth } from '@/context'
+import type { UserRole } from '@/types'
 
 interface ProtectedRouteProps {
   children: React.ReactNode

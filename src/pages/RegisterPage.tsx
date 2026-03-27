@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { RegisterForm } from '@/components/auth/RegisterForm'
+import { RegisterForm } from '@/components/auth'
 
 const RegisterPage: React.FC = () => {
   return (

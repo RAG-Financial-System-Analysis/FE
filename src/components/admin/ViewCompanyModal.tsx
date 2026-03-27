@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { X, Building, Globe, Calendar, Tag, FileText } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import axiosInstance from '@/lib/axios'
+import { Button } from '@/components/ui'
+import { axiosInstance } from '@/lib'
 
 interface CompanyDetail {
   id: string
@@ -28,6 +28,7 @@ export const ViewCompanyModal = ({ companyId, isOpen, onClose }: ViewCompanyModa
     if (isOpen && companyId) {
       fetchCompanyDetail()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, companyId])
 
   const fetchCompanyDetail = async () => {

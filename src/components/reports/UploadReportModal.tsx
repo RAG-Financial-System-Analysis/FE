@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
-import { useReports } from '@/hooks/useReports'
-import backgroundJobService from '@/services/backgroundJobService'
+import { useReports } from '@/hooks'
+import { backgroundJobService } from '@/services'
 import { X, Upload, FileText, AlertCircle, CheckCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui'
+import { Input } from '@/components/ui'
 import toast from 'react-hot-toast'
-import type { Company } from '@/types/companies.types'
-import type { ReportCategory } from '@/types/admin.types'
+import type { Company } from '@/types'
+import type { ReportCategory } from '@/types'
 
 interface UploadReportModalProps {
   isOpen: boolean

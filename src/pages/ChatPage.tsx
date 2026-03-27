@@ -1,7 +1,7 @@
-import { ChatInterface } from '@/components/chat/ChatInterface'
-import { useAuth } from '@/context/AuthContext'
+import { ChatInterface } from '@/components/chat'
+import { useAuth } from '@/context'
 import { Navigate } from 'react-router-dom'
-import Sidebar from '@/components/layout/Sidebar'
+import { Sidebar } from '@/components/layout'
 
 // Wrapper component for ChatInterface in ChatPage context
 const ChatPageInterface: React.FC = () => {

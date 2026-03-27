@@ -1,27 +1,29 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { LayoutDashboard, LogOut, FileBarChart, User, Bot, BarChart3 } from 'lucide-react'
-import { useAuth } from '@/context/AuthContext'
-import { cn } from '@/lib/utils'
+import { useAuth } from '@/context'
+import { cn } from '@/lib'
 
-interface SidebarProps {
-  // No props needed for simple navigation
+interface MenuItem {
+  label: string
+  icon: React.ReactNode
+  path: string
 }
 
-const Sidebar: React.FC<SidebarProps> = () => {
+const Sidebar: React.FC = () => {
   const { logout, user, hasRole } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
-  const handleItemClick = (item: any) => {
+  const handleItemClick = (item: MenuItem) => {
     // Navigate normally for all items
     navigate(item.path)
   }
 
-  const isItemActive = (item: any) => {
+  const isItemActive = (item: MenuItem) => {
     return location.pathname === item.path
   }
 
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     // Dashboard - only for Admin
     ...(hasRole(['Admin'])
       ? [

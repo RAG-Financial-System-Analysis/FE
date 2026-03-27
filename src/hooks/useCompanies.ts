@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import companiesService from '@/services/companiesService'
+import { companiesService } from '@/services/companiesService'
 import type { Company, GetCompaniesRequest, CreateCompanyRequest, UpdateCompanyRequest } from '@/types/companies.types'
 
 interface UseCompaniesReturn {

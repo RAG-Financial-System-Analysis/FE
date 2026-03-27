@@ -1,13 +1,15 @@
 import { useState } from 'react'
-import AdminLayout from '@/components/admin/AdminLayout'
-import DashboardContent from '@/components/admin/DashboardContent'
-import UserManagementContent from '@/components/admin/UserManagementContent'
-import ReportCategoriesContent from '@/components/admin/ReportCategoriesContent'
-import AnalyticsTypesContent from '@/components/admin/AnalyticsTypesContent'
-import AuditLogsContent from '@/components/admin/AuditLogsContent'
-import CompaniesContent from '@/components/admin/CompaniesContent'
-import SystemConfigContent from '@/components/admin/SystemConfigContent'
-import ReportsManagementContent from '@/components/admin/ReportsManagementContent'
+import {
+  AdminLayout,
+  DashboardContent,
+  UserManagementContent,
+  ReportCategoriesContent,
+  AnalyticsTypesContent,
+  AuditLogsContent,
+  CompaniesContent,
+  SystemConfigContent,
+  ReportsManagementContent
+} from '@/components/admin'
 
 const Admin = () => {
   const [activeMenu, setActiveMenu] = useState('Dashboard')

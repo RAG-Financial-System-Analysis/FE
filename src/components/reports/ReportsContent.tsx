@@ -12,10 +12,9 @@ import {
   Users,
   Lock
 } from 'lucide-react'
-import reportsService from '@/services/reportsService'
-import { companyService } from '@/services/companyService'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { reportsService, companiesService } from '@/services'
+import { Button } from '@/components/ui'
+import { Input } from '@/components/ui'
 import toast from 'react-hot-toast'
 
 interface ReportItem {
@@ -85,7 +84,7 @@ const ReportsContent: React.FC = () => {
 
   const fetchCompanies = async () => {
     try {
-      const list = await companyService.getCompanies(1, 100)
+      const list = await companiesService.getCompanies({ page: 1, pageSize: 100 })
 
       if (Array.isArray(list) && list.length > 0) {
         setCompanies(list.map((c) => ({ id: c.id, name: c.name, ticker: c.ticker })))

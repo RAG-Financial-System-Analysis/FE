@@ -1,6 +1,5 @@
 import { useEffect, useCallback } from 'react'
-import { useAdmin } from '@/hooks/useAdmin'
-import { useAutoRefresh } from '@/hooks/useAutoRefresh'
+import { useAdmin, useAutoRefresh } from '@/hooks'
 import { Users, FileText, MessageSquare, HardDrive, TrendingUp, AlertCircle, BarChart3, PieChart } from 'lucide-react'
 import {
   BarChart,
@@ -15,7 +14,7 @@ import {
   ResponsiveContainer,
   Legend
 } from 'recharts'
-import AutoRefreshIndicator from '@/components/common/AutoRefreshIndicator'
+import { AutoRefreshIndicator } from '@/components/common'
 
 const DashboardContent = () => {
   const { systemStats, isLoading, error, loadSystemStats, clearError } = useAdmin()

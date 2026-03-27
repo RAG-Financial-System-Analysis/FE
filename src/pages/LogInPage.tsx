@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Eye, EyeOff, HelpCircle, AlertCircle, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import authService from '@/services/auth.service'
-import { useAuth } from '@/context/AuthContext'
+import { authService } from '@/services'
+import { useAuth } from '@/context'
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)

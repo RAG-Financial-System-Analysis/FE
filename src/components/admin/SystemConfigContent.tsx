@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Settings, Zap, CheckCircle, XCircle, AlertCircle, RefreshCw, Upload, Database } from 'lucide-react'
-import axiosInstance from '@/lib/axios'
-import adminService from '@/services/adminService'
+import { axiosInstance } from '@/lib'
+import { adminService } from '@/services'
 
 interface TestResult {
   status: 'success' | 'error' | 'loading'
@@ -174,12 +174,12 @@ const SystemConfigContent = () => {
 
       if (response.success) {
         // Extract S3 info from the actual response data
-        const s3Data = response.data || {}
+        const s3Data = (response.data || {}) as Record<string, unknown>
         setS3Info({
-          bucketName: s3Data.bucketName || 'N/A',
-          region: s3Data.region || 'N/A',
+          bucketName: (s3Data.bucketName as string) || 'N/A',
+          region: (s3Data.region as string) || 'N/A',
           status: 'Available',
-          permissions: s3Data.permissions || []
+          permissions: (s3Data.permissions as string[]) || []
         })
         setS3InfoResult({
           status: 'success',

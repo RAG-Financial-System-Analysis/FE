@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
-import reportsService from '@/services/reportsService'
-import backgroundJobService from '@/services/backgroundJobService'
+import { reportsService } from '@/services/reportsService'
+import { backgroundJobService } from '@/services/backgroundJobService'
 import type {
   Report,
   ReportDetail,

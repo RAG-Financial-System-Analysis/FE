@@ -1,13 +1,40 @@
 // Analytics related types
+
+/**
+ * Analytics type definition
+ */
 export interface AnalyticsType {
   id: string
-  name: string
   code: string
-  description: string
+  name: string
+  description?: string
+  createdAt: string
 }
 
+/**
+ * Request to create an analytics type
+ */
+export interface CreateAnalyticsTypeRequest {
+  code: string
+  name: string
+  description?: string
+}
+
+/**
+ * Request to update an analytics type
+ */
+export interface UpdateAnalyticsTypeRequest {
+  code: string
+  name: string
+  description?: string
+}
+
+/**
+ * Response containing analytics types
+ */
 export interface GetAnalyticsTypesResponse {
-  analyticTypes: AnalyticsType[] // Note: "analyticTypes" to match backend
+  analyticsTypes: AnalyticsType[]
+  totalCount: number
 }
 
 export interface GenerateAnalyticsReportRequest {

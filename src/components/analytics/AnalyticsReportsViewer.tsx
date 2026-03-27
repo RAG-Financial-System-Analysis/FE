@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { useAnalytics } from '@/hooks/useAnalytics'
-import { useChat } from '@/hooks/useChat'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { useAnalytics, useChat } from '@/hooks'
+import { Button } from '@/components/ui'
+import { Input } from '@/components/ui'
 import {
   FileText,
   Download,
@@ -21,7 +20,7 @@ import {
   ChevronRight
 } from 'lucide-react'
 import toast from 'react-hot-toast'
-import type { AnalyticsReport } from '@/types/analytics.types'
+import type { AnalyticsReport } from '@/types'
 
 const AnalyticsReportsViewer: React.FC = () => {
   const {

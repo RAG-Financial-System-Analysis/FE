@@ -1,13 +1,15 @@
-export type UserRole = 'Admin' | 'Analyst'
+/**
+ * User profile related types
+ */
 
-export interface User {
+/**
+ * Extended user profile with timestamps
+ */
+export interface UserProfile {
   id: string
   email: string
   fullName: string
-  role: UserRole
-}
-
-export interface UserProfile extends User {
+  role: string
   createdAt?: string
   updatedAt?: string
 }

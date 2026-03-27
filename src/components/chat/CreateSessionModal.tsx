@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui'
+import { Input } from '@/components/ui'
 import { AnalyticsTypeSelector } from './AnalyticsTypeSelector'
-import { useChat } from '@/hooks/useChat'
-import type { AnalyticsType } from '@/types/analytics.types'
+import { useChat } from '@/hooks'
+import type { AnalyticsType } from '@/types'
 
 interface CreateSessionModalProps {
   isOpen: boolean

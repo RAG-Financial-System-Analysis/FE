@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, type Variants } from 'framer-motion'
-import { useAuth } from '@/context/AuthContext'
+import { useAuth } from '@/context'
 
 function HomePage() {
   const navigate = useNavigate()

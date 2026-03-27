@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useReports } from '@/hooks/useReports'
+import { useReports } from '@/hooks'
 import {
   X,
   FileText,
@@ -13,7 +13,7 @@ import {
   AlertCircle,
   TrendingUp
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 
 interface ReportDetailModalProps {
   isOpen: boolean

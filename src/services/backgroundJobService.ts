@@ -1,4 +1,4 @@
-import jobsService from './jobsService'
+import { jobsService } from './jobsService'
 import toast from 'react-hot-toast'
 
 interface BackgroundJob {
@@ -13,11 +13,16 @@ interface BackgroundJob {
   onError?: (error: string) => void
 }
 
+/**
+ * Background Job Service - Manages long-running background jobs with polling
+ */
 class BackgroundJobService {
   private jobs: Map<string, BackgroundJob> = new Map()
   private pollingIntervals: Map<string, number> = new Map()
 
-  // Start a background job
+  /**
+   * Start a background job
+   */
   startJob(job: Omit<BackgroundJob, 'id' | 'startTime'>): string {
     const id = `${job.type}_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
 
@@ -45,7 +50,9 @@ class BackgroundJobService {
     return id
   }
 
-  // Start polling for a job with different strategies based on job type
+  /**
+   * Start polling for a job with different strategies based on job type
+   */
   private startPolling(jobId: string) {
     const job = this.jobs.get(jobId)
     if (!job) return
@@ -109,7 +116,9 @@ class BackgroundJobService {
     poll()
   }
 
-  // Handle job completion
+  /**
+   * Handle job completion
+   */
   private handleJobComplete(jobId: string, result: unknown) {
     const job = this.jobs.get(jobId)
     if (!job) return
@@ -135,7 +144,9 @@ class BackgroundJobService {
     this.saveToStorage()
   }
 
-  // Handle job error
+  /**
+   * Handle job error
+   */
   private handleJobError(jobId: string, error: string) {
     const job = this.jobs.get(jobId)
     if (!job) return
@@ -161,7 +172,9 @@ class BackgroundJobService {
     this.saveToStorage()
   }
 
-  // Clear polling for a job
+  /**
+   * Clear polling for a job
+   */
   private clearPolling(jobId: string) {
     const timeout = this.pollingIntervals.get(jobId)
     if (timeout) {
@@ -170,7 +183,9 @@ class BackgroundJobService {
     }
   }
 
-  // Cancel a job
+  /**
+   * Cancel a job
+   */
   cancelJob(jobId: string) {
     const job = this.jobs.get(jobId)
     if (!job) return
@@ -187,12 +202,16 @@ class BackgroundJobService {
     this.saveToStorage()
   }
 
-  // Get all active jobs
+  /**
+   * Get all active jobs
+   */
   getActiveJobs(): BackgroundJob[] {
     return Array.from(this.jobs.values())
   }
 
-  // Recovery from localStorage on app start
+  /**
+   * Recovery from localStorage on app start
+   */
   recoverJobs() {
     try {
       const stored = localStorage.getItem('backgroundJobs')
@@ -220,7 +239,9 @@ class BackgroundJobService {
     }
   }
 
-  // Save jobs to localStorage
+  /**
+   * Save jobs to localStorage
+   */
   private saveToStorage() {
     try {
       const jobs = Array.from(this.jobs.values())
@@ -230,7 +251,9 @@ class BackgroundJobService {
     }
   }
 
-  // Helper methods for messages
+  /**
+   * Helper methods for messages
+   */
   private getJobTypeLabel(type: string): string {
     switch (type) {
       case 'upload':
@@ -270,11 +293,13 @@ class BackgroundJobService {
     }
   }
 
-  // Cleanup on app close
+  /**
+   * Cleanup on app close
+   */
   cleanup() {
     this.pollingIntervals.forEach((timeout) => clearTimeout(timeout))
     this.pollingIntervals.clear()
   }
 }
 
-export default new BackgroundJobService()
+export const backgroundJobService = new BackgroundJobService()

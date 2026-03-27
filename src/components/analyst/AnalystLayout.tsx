@@ -1,12 +1,11 @@
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/context/AuthContext'
+import { useState, useLayoutEffect } from 'react'
+import { useAuth } from '@/context'
 import { Navigate, useSearchParams } from 'react-router-dom'
 import { BarChart3, MessageSquare, FileText, User, LogOut, Menu, X, TrendingUp, FileBarChart } from 'lucide-react'
-import { ChatInterface } from '@/components/chat/ChatInterface'
-import AnalyticsReportsViewer from '@/components/analytics/AnalyticsReportsViewer'
-import CreateAnalyticsReport from '@/components/analytics/CreateAnalyticsReport'
-import ReportsContent from '@/components/reports/ReportsContent'
-import ProfileContent from '@/components/profile/ProfileContent'
+import { ChatInterface } from '@/components/chat'
+import { AnalyticsReportsViewer, CreateAnalyticsReport } from '@/components/analytics'
+import { ReportsContent } from '@/components/reports'
+import { ProfileContent } from '@/components/profile'
 
 type AnalystView = 'chat' | 'reports' | 'analytics' | 'manage-reports' | 'profile'
 
@@ -21,7 +20,7 @@ const AnalystLayout: React.FC<AnalystLayoutProps> = ({ defaultView = 'chat' }) =
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // Handle URL params for tab switching
-  useEffect(() => {
+  useLayoutEffect(() => {
     const tabParam = searchParams.get('tab') as AnalystView
     if (tabParam && ['chat', 'reports', 'analytics', 'manage-reports', 'profile'].includes(tabParam)) {
       setCurrentView(tabParam)

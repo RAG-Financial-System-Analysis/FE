@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { useAdmin } from '@/hooks/useAdmin'
-import type { AnalyticsType, CreateAnalyticsTypeRequest } from '@/types/admin.types'
+import { useEffect, useState, useLayoutEffect } from 'react'
+import { useAdmin } from '@/hooks'
+import type { AnalyticsType, CreateAnalyticsTypeRequest } from '@/types'
 import {
   Edit,
   Trash2,
@@ -15,9 +15,9 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import ConfirmModal from '@/components/ui/ConfirmModal'
+import { Button } from '@/components/ui'
+import { Input } from '@/components/ui'
+import { ConfirmModal } from '@/components/ui'
 import { ViewAnalyticsTypeModal } from './ViewAnalyticsTypeModal'
 import toast from 'react-hot-toast'
 
@@ -69,7 +69,7 @@ const AnalyticsTypesContent = () => {
   const paginatedTypes = filteredTypes.slice((page - 1) * pageSize, page * pageSize)
 
   // Reset page when search changes
-  useEffect(() => {
+  useLayoutEffect(() => {
     setPage(1)
   }, [searchTerm])
 

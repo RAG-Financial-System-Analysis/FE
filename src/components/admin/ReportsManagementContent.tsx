@@ -1,7 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
-import { useReports } from '@/hooks/useReports'
-import { useCompanies } from '@/hooks/useCompanies'
-import { useAutoRefresh } from '@/hooks/useAutoRefresh'
+import { useReports, useCompanies, useAutoRefresh } from '@/hooks'
 import {
   FileText,
   Search,
@@ -19,9 +17,9 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react'
-import type { Report } from '@/types/reports.types'
+import type { Report } from '@/types'
 import toast from 'react-hot-toast'
-import AutoRefreshIndicator from '@/components/common/AutoRefreshIndicator'
+import { AutoRefreshIndicator } from '@/components/common'
 
 const ReportsManagementContent = () => {
   const {

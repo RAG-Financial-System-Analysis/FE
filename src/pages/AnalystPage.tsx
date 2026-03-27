@@ -1,5 +1,5 @@
 import React from 'react'
-import AnalystLayout from '@/components/analyst/AnalystLayout'
+import { AnalystLayout } from '@/components/analyst'
 
 const AnalystPage: React.FC = () => {
   return <AnalystLayout />

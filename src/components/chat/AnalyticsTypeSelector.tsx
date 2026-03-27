@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { useAnalytics } from '@/hooks/useAnalytics'
-import type { AnalyticsType } from '@/types/analytics.types'
+import { Button } from '@/components/ui'
+import { useAnalytics } from '@/hooks'
+import type { AnalyticsType } from '@/types'
 
 interface AnalyticsTypeSelectorProps {
   selectedType: AnalyticsType | null
