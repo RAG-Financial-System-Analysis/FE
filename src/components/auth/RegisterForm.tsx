@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, AlertCircle, Loader2, CheckCircle } from 'lucide-react'
-import { useAuthActions } from '@/hooks/useAuthActions'
-import type { RegisterRequest } from '@/types/auth.types'
+import { useAuthActions } from '@/hooks'
+import type { RegisterRequest } from '@/types'
 
 export const RegisterForm: React.FC = () => {
   const navigate = useNavigate()

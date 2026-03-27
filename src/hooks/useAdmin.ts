@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import adminService from '@/services/adminService'
+import { adminService } from '@/services/adminService'
 import type {
   User,
   UserDetail,
@@ -7,14 +7,10 @@ import type {
   UpdateUserRequest,
   SystemStatistics,
   GetAuditLogsRequest,
-  AuditLog,
-  ReportCategory,
-  CreateReportCategoryRequest,
-  UpdateReportCategoryRequest,
-  AnalyticsType,
-  CreateAnalyticsTypeRequest,
-  UpdateAnalyticsTypeRequest
+  AuditLog
 } from '@/types/admin.types'
+import type { ReportCategory, CreateReportCategoryRequest, UpdateReportCategoryRequest } from '@/types/reports.types'
+import type { AnalyticsType, CreateAnalyticsTypeRequest, UpdateAnalyticsTypeRequest } from '@/types/analytics.types'
 
 interface UseAdminReturn {
   // State

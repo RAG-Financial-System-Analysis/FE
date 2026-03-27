@@ -4,4 +4,5 @@ export { VerifyAccountForm } from './VerifyAccountForm'
 export { LoginForm } from './LoginForm'
 
 // Route protection components
-export { ProtectedRoute, AdminRoute, AnalystRoute, PublicRoute } from './ProtectedRoute'
+export { ProtectedRoute } from './ProtectedRoute'
+export { PublicRoute } from './PublicRoute'

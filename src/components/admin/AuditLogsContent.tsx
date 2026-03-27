@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useAdmin } from '@/hooks/useAdmin'
+import { useAdmin } from '@/hooks'
 import { Search, ChevronLeft, ChevronRight, AlertCircle, Calendar, User, Activity } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui'
+import { Input } from '@/components/ui'
 
 const AuditLogsContent = () => {
   const { auditLogs, isLoading, error, totalLogs, clearError, setError } = useAdmin()

@@ -1,15 +1,13 @@
 import { useEffect, useState, useCallback } from 'react'
-import { useAdmin } from '@/hooks/useAdmin'
-import { useAutoRefresh } from '@/hooks/useAutoRefresh'
-import type { User, UpdateUserRequest } from '@/types/admin.types'
+import { useAdmin, useAutoRefresh } from '@/hooks'
+import type { User, UpdateUserRequest } from '@/types'
 import { Edit, Trash2, Search, ChevronLeft, ChevronRight, UserPlus, AlertCircle, Eye } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import ConfirmModal from '@/components/ui/ConfirmModal'
-import { EditUserModal } from './EditUserModal'
-import { ViewUserModal } from './ViewUserModal'
+import { Button } from '@/components/ui'
+import { Input } from '@/components/ui'
+import { ConfirmModal } from '@/components/ui'
+import { EditUserModal, ViewUserModal } from './index'
 import toast from 'react-hot-toast'
-import AutoRefreshIndicator from '@/components/common/AutoRefreshIndicator'
+import { AutoRefreshIndicator } from '@/components/common'
 
 const UserManagementContent = () => {
   const { users, isLoading, error, totalUsers, loadUsers, updateUser, deleteUser, clearError } = useAdmin()

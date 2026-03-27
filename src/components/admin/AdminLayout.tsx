@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { LayoutDashboard, Users, FileText, Settings, LogOut, Building2, FolderOpen } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@/context/AuthContext'
+import { useAuth } from '@/context'
 
 interface AdminLayoutProps {
   children: ReactNode

@@ -1,7 +1,6 @@
 import React from 'react'
-import { useAuth } from '@/context/AuthContext'
-import { useRoleGuard } from '@/hooks/useRoleGuard'
-import { useAuthActions } from '@/hooks/useAuthActions'
+import { useAuth } from '@/context'
+import { useRoleGuard, useAuthActions } from '@/hooks'
 
 export const AuthExample: React.FC = () => {
   const { isAuthenticated, user, role, fullName, accessToken } = useAuth()

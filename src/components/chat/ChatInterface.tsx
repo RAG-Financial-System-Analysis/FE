@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { useChat } from '@/hooks/useChat'
+import { Button } from '@/components/ui'
+import { Input } from '@/components/ui'
+import { Textarea } from '@/components/ui'
+import { useChat } from '@/hooks'
 import { CreateSessionModal } from './CreateSessionModal'
-import type { ChatSession } from '@/types/chat.types'
+import type { ChatSession } from '@/types'
 
 export const ChatInterface: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)

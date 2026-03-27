@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import chatService from '@/services/chatService'
+import { chatService } from '@/services/chatService'
 import type {
   ChatSession,
   ChatMessage,

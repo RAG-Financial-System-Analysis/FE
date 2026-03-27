@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui'
+import { Input } from '@/components/ui'
 import { Mail, KeyRound, ChevronLeft, CheckCircle2, AlertCircle } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import authService from '@/services/auth.service'
+import { authService } from '@/services'
 
 const VerifyAccount = () => {
   const navigate = useNavigate()

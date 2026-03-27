@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useAuthActions } from '@/hooks/useAuthActions'
-import type { LoginRequest } from '@/types/auth.types'
+import { useAuthActions } from '@/hooks'
+import type { LoginRequest } from '@/types'
 
 export const LoginForm: React.FC = () => {
   const navigate = useNavigate()

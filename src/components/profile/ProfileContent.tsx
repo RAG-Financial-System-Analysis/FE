@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { User, Mail, Shield, Clock, LogOut, Edit3, CheckCircle, ChevronRight } from 'lucide-react'
-import { useAuth } from '@/context/AuthContext'
-import { Button } from '@/components/ui/button'
+import { useAuth } from '@/context'
+import { Button } from '@/components/ui'
 
 const ProfileContent: React.FC = () => {
   const { user, role, logout } = useAuth()
@@ -16,7 +16,7 @@ const ProfileContent: React.FC = () => {
     ? user.fullName
         .trim()
         .split(' ')
-        .map((n) => n[0])
+        .map((n: string) => n[0])
         .join('')
         .toUpperCase()
         .slice(0, 2)

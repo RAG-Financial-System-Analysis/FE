@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useAdmin } from '@/hooks/useAdmin'
-import type { ReportCategory, CreateReportCategoryRequest } from '@/types/admin.types'
+import { useAdmin } from '@/hooks'
+import type { ReportCategory, CreateReportCategoryRequest } from '@/types'
 import {
   Edit,
   Trash2,
@@ -15,10 +15,10 @@ import {
   Building,
   Eye
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import ConfirmModal from '@/components/ui/ConfirmModal'
-import ViewReportCategoryModal from './ViewReportCategoryModal'
+import { Button } from '@/components/ui'
+import { Input } from '@/components/ui'
+import { ConfirmModal } from '@/components/ui'
+import { ViewReportCategoryModal } from './index'
 import toast from 'react-hot-toast'
 
 const ReportCategoriesContent = () => {

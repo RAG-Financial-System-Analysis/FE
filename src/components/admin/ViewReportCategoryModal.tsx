@@ -1,6 +1,6 @@
 import { X, FolderOpen, FileText, Calendar, Hash, BarChart3 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import type { ReportCategory } from '@/types/admin.types'
+import { Button } from '@/components/ui'
+import type { ReportCategory } from '@/types'
 
 interface ViewReportCategoryModalProps {
   category: ReportCategory | null

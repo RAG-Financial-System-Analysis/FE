@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import authService from '@/services/auth.service'
+import { authService } from '@/services/authService'
 import type { RegisterRequest, LoginRequest, VerifyAccountRequest } from '@/types/auth.types'
 
 interface UseAuthActionsReturn {

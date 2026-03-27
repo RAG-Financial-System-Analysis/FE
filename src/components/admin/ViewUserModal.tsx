@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { X, User, Mail, Shield, Calendar, Clock, Activity } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import adminService from '@/services/adminService'
-import type { UserDetail } from '@/types/admin.types'
+import { Button } from '@/components/ui'
+import { adminService } from '@/services'
+import type { UserDetail } from '@/types'
 
 interface ViewUserModalProps {
   userId: string | null
@@ -14,12 +14,6 @@ export const ViewUserModal = ({ userId, isOpen, onClose }: ViewUserModalProps) =
   const [userDetail, setUserDetail] = useState<UserDetail | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (isOpen && userId) {
-      fetchUserDetail()
-    }
-  }, [isOpen, userId])
 
   const fetchUserDetail = async () => {
     if (!userId) return
@@ -37,6 +31,13 @@ export const ViewUserModal = ({ userId, isOpen, onClose }: ViewUserModalProps) =
       setIsLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (isOpen && userId) {
+      fetchUserDetail()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, userId])
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Chưa có thông tin'

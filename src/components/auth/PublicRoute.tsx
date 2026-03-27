@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom'
-import { useAuth } from '@/context/AuthContext'
+import { useAuth } from '@/context'
 import { Loader2 } from 'lucide-react'
 
 interface PublicRouteProps {
@@ -10,7 +10,7 @@ interface PublicRouteProps {
  * PublicRoute component - Redirects authenticated users away from public pages
  * Used for login, signup pages - if user is already logged in, redirect to dashboard/admin
  */
-const PublicRoute = ({ children }: PublicRouteProps) => {
+export const PublicRoute = ({ children }: PublicRouteProps) => {
   const { isAuthenticated, loading, role } = useAuth()
 
   // Show loading spinner while checking auth status
@@ -31,5 +31,3 @@ const PublicRoute = ({ children }: PublicRouteProps) => {
   // User is not authenticated, show the public page (login/signup)
   return <>{children}</>
 }
-
-export default PublicRoute

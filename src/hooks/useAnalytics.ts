@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
-import analyticsService from '@/services/analyticsService'
-import backgroundJobService from '@/services/backgroundJobService'
+import { analyticsService } from '@/services/analyticsService'
+import { backgroundJobService } from '@/services/backgroundJobService'
 import type {
   AnalyticsType,
   GenerateAnalyticsReportRequest,
@@ -49,11 +49,11 @@ export const useAnalytics = (): UseAnalyticsReturn => {
 
     try {
       const response = await analyticsService.getAnalyticsTypes()
-      setAnalyticsTypes(response.analyticTypes)
+      setAnalyticsTypes(response.analyticsTypes)
 
       return {
         success: true,
-        message: `Loaded ${response.analyticTypes.length} analytics types successfully`
+        message: `Loaded ${response.analyticsTypes.length} analytics types successfully`
       }
     } catch (err: unknown) {
       const errorMessage =

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useAuthActions } from '@/hooks/useAuthActions'
-import type { VerifyAccountRequest } from '@/types/auth.types'
+import { useAuthActions } from '@/hooks'
+import type { VerifyAccountRequest } from '@/types'
 
 export const VerifyAccountForm: React.FC = () => {
   const navigate = useNavigate()

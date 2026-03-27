@@ -39,11 +39,7 @@ Wrap your app with the AuthProvider:
 import { AuthProvider } from '@/context/AuthContext'
 
 function App() {
-  return (
-    <AuthProvider>
-      {/* Your app components */}
-    </AuthProvider>
-  )
+  return <AuthProvider>{/* Your app components */}</AuthProvider>
 }
 ```
 
@@ -58,7 +54,7 @@ function MyComponent() {
   const { isAuthenticated, user, role } = useAuth()
   const { login, logout } = useAuthActions()
   const { isAdmin, canAccessAdminRoutes } = useRoleGuard()
-  
+
   // Your component logic
 }
 ```
@@ -110,7 +106,7 @@ All requests and responses use **PascalCase** to match the C# backend:
 // Response
 {
   "AccessToken": "jwt_token_here",
-  "IdToken": "id_token_here", 
+  "IdToken": "id_token_here",
   "RefreshToken": "refresh_token_here",
   "Role": "Analyst",
   "FullName": "Nguyen Van A"
@@ -120,23 +116,27 @@ All requests and responses use **PascalCase** to match the C# backend:
 ### Role System
 
 Two roles are supported:
+
 - **Admin**: Full access to all features
 - **Analyst**: Limited access, cannot access admin endpoints
 
 ## 🛡️ Security Features
 
 ### Token Management
+
 - Access tokens stored in localStorage
 - Automatic token inclusion in API requests
 - Token cleanup on logout
 - 401 response handling with automatic logout
 
 ### Route Protection
+
 - Role-based route access control
 - Automatic redirects for unauthorized access
 - Loading states during authentication checks
 
 ### Error Handling
+
 - Comprehensive error messages
 - User-friendly Vietnamese error messages
 - Automatic error clearing on user input
@@ -170,13 +170,13 @@ import { useAuthActions } from '@/hooks/useAuthActions'
 
 function CustomLogin() {
   const { login, isLoggingIn, error } = useAuthActions()
-  
+
   const handleLogin = async () => {
     const result = await login({
       Email: 'user@example.com',
       Password: 'password123'
     })
-    
+
     if (result.success) {
       // Redirect based on role
       if (result.role === 'Admin') {
@@ -186,7 +186,7 @@ function CustomLogin() {
       }
     }
   }
-  
+
   return (
     <button onClick={handleLogin} disabled={isLoggingIn}>
       {isLoggingIn ? 'Logging in...' : 'Login'}
@@ -202,15 +202,11 @@ import { useRoleGuard } from '@/hooks/useRoleGuard'
 
 function Navigation() {
   const { shouldShowAdminFeatures, shouldShowAnalystFeatures } = useRoleGuard()
-  
+
   return (
     <nav>
-      {shouldShowAnalystFeatures && (
-        <Link to="/reports">Reports</Link>
-      )}
-      {shouldShowAdminFeatures && (
-        <Link to="/admin/users">User Management</Link>
-      )}
+      {shouldShowAnalystFeatures && <Link to='/reports'>Reports</Link>}
+      {shouldShowAdminFeatures && <Link to='/admin/users'>User Management</Link>}
     </nav>
   )
 }
@@ -260,6 +256,7 @@ To test the authentication system:
 ## 📚 API Reference
 
 For complete API documentation, see:
+
 - `code/FE_WEB_API_INTEGRATION_GUIDE.md`
 
 ## 🔗 Related Files

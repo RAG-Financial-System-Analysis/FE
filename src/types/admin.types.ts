@@ -1,5 +1,10 @@
-// Admin related types
+/**
+ * Admin management types
+ */
 
+/**
+ * User entity with basic information
+ */
 export interface User {
   id: string
   email: string
@@ -10,6 +15,9 @@ export interface User {
   lastLoginAt: string | null
 }
 
+/**
+ * User with detailed statistics
+ */
 export interface UserDetail extends User {
   statistics: {
     reportsUploaded: number
@@ -18,23 +26,35 @@ export interface UserDetail extends User {
   }
 }
 
+/**
+ * Request to get users with pagination and filtering
+ */
 export interface GetUsersRequest {
   page?: number
   pageSize?: number
   roleId?: string
 }
 
+/**
+ * Response containing paginated users
+ */
 export interface GetUsersResponse {
   users: User[]
   totalCount: number
 }
 
+/**
+ * Request to update user information
+ */
 export interface UpdateUserRequest {
   fullName: string
   role: string
   isActive: boolean
 }
 
+/**
+ * System-wide statistics
+ */
 export interface SystemStatistics {
   users: {
     total: number
@@ -63,6 +83,9 @@ export interface SystemStatistics {
   }
 }
 
+/**
+ * Audit log entry
+ */
 export interface AuditLog {
   id: string
   userId: string
@@ -74,6 +97,9 @@ export interface AuditLog {
   timestamp: string
 }
 
+/**
+ * Request to get audit logs with filtering
+ */
 export interface GetAuditLogsRequest {
   userId?: string
   action?: string
@@ -83,64 +109,10 @@ export interface GetAuditLogsRequest {
   pageSize?: number
 }
 
+/**
+ * Response containing paginated audit logs
+ */
 export interface GetAuditLogsResponse {
   logs: AuditLog[]
-  totalCount: number
-}
-
-export interface ReportCategory {
-  id: string
-  name: string
-  description: string
-  createdAt: string
-  associatedReportsCount?: number
-  associatedReports?: AssociatedReport[]
-}
-
-export interface AssociatedReport {
-  id: string
-  title: string
-  companyName: string
-  createdAt: string
-}
-
-export interface CreateReportCategoryRequest {
-  name: string
-  description: string
-}
-
-export interface UpdateReportCategoryRequest {
-  name: string
-  description: string
-}
-
-export interface GetReportCategoriesResponse {
-  categories: ReportCategory[]
-  totalCount: number
-}
-
-// Analytics Types interfaces
-export interface AnalyticsType {
-  id: string
-  code: string
-  name: string
-  description?: string
-  createdAt: string
-}
-
-export interface CreateAnalyticsTypeRequest {
-  code: string
-  name: string
-  description?: string
-}
-
-export interface UpdateAnalyticsTypeRequest {
-  code: string
-  name: string
-  description?: string
-}
-
-export interface GetAnalyticsTypesResponse {
-  analyticsTypes: AnalyticsType[]
   totalCount: number
 }

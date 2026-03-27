@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useCompanies } from '@/hooks/useCompanies'
+import { useCompanies } from '@/hooks'
 import { Building2, Plus, Search, Edit, Trash2, AlertCircle, Eye, ChevronLeft, ChevronRight } from 'lucide-react'
 import toast from 'react-hot-toast'
-import type { Company, CreateCompanyRequest, UpdateCompanyRequest } from '@/types/companies.types'
+import type { Company, CreateCompanyRequest, UpdateCompanyRequest } from '@/types'
 import { ViewCompanyModal } from './ViewCompanyModal'
 
 interface CompanyModalProps {

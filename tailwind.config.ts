@@ -8,14 +8,14 @@ export default {
         primary: {
           DEFAULT: '#1B2C4F', // Dark blue from the screenshot
           light: '#2A4069',
-          dark: '#121F3A',
+          dark: '#121F3A'
         },
         accent: {
-          DEFAULT: '#ffffff',
+          DEFAULT: '#ffffff'
         }
       },
       backgroundImage: {
-        'hero-gradient': 'linear-gradient(to right, rgba(255,255,255,0.9), rgba(255,255,255,0.4))',
+        'hero-gradient': 'linear-gradient(to right, rgba(255,255,255,0.9), rgba(255,255,255,0.4))'
       }
     }
   },

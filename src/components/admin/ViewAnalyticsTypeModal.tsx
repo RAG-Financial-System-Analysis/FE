@@ -1,5 +1,5 @@
 import { X, BarChart3, Code, FileText, Calendar } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 
 interface AnalyticsType {
   id: string

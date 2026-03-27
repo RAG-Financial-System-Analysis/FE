@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import metricsService from '@/services/metricsService'
+import { metricsService } from '@/services/metricsService'
 import type {
   MetricsGroup,
   MetricDefinition,

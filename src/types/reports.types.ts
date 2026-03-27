@@ -1,5 +1,51 @@
 // Reports related types
 
+/**
+ * Report category
+ */
+export interface ReportCategory {
+  id: string
+  name: string
+  description: string
+  createdAt: string
+  associatedReportsCount?: number
+  associatedReports?: AssociatedReport[]
+}
+
+/**
+ * Report associated with a category
+ */
+export interface AssociatedReport {
+  id: string
+  title: string
+  companyName: string
+  createdAt: string
+}
+
+/**
+ * Request to create a report category
+ */
+export interface CreateReportCategoryRequest {
+  name: string
+  description: string
+}
+
+/**
+ * Request to update a report category
+ */
+export interface UpdateReportCategoryRequest {
+  name: string
+  description: string
+}
+
+/**
+ * Response containing report categories
+ */
+export interface GetReportCategoriesResponse {
+  categories: ReportCategory[]
+  totalCount: number
+}
+
 export interface Report {
   id: string
   companyName: string
@@ -84,13 +130,6 @@ export interface UpdateVisibilityRequest {
   visibility: 'private' | 'public'
 }
 
-// Report Categories (Public)
-export interface ReportCategory {
-  id: string
-  name: string
-  description: string
-}
-
 // Search Reports Response
 export interface SearchReportItem {
   id: string
@@ -106,10 +145,6 @@ export interface SearchReportsResponse {
   page: number
   pageSize: number
   data: SearchReportItem[]
-}
-
-export interface GetReportCategoriesResponse {
-  categories: ReportCategory[]
 }
 
 export interface SearchReportsRequest {
